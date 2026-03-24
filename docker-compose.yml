@@ -1,43 +1,40 @@
 services:
-  # postgres:
-  #   image: postgres:17-alpine
-  #   container_name: fingo_postgres
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_USER: ${POSTGRES_USER:-fingo}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fingo_secret}
-  #     POSTGRES_DB: ${POSTGRES_DB:-fingo}
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fingo} -d ${POSTGRES_DB:-fingo}"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
+  postgres:
+    image: postgres:17-alpine
+    container_name: fingo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fingo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fingo_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-fingo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fingo} -d ${POSTGRES_DB:-fingo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #     args:
-  #       VERSION: ${VERSION:-dev}
-  #   container_name: fingo_app
-  #   restart: unless-stopped
-  #   environment:
-  #     - APP_PORT=8008
-  #     - DB_HOST=postgres
-  #     - DB_PORT=5432
-  #     - DB_USER=${POSTGRES_USER:-fingo}
-  #     - DB_PASSWORD=${POSTGRES_PASSWORD:-fingo_secret}
-  #     - DB_NAME=${POSTGRES_DB:-fingo}
-  #     - DB_SSLMODE=disable
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   expose:
-  #     - "8008"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+    container_name: fingo_app
+    restart: unless-stopped
+    environment:
+      - APP_PORT=8008
+      - APP_DEBUG=true
+      - APP_ENV=local
+      - DB_CONN_STRING=postgres://${POSTGRES_USER:-fingo}:${POSTGRES_PASSWORD:-fingo_secret}@postgres:5432/${POSTGRES_DB:-fingo}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "8008"
 
   nginx:
     image: nginx:1.27-alpine
@@ -48,8 +45,8 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./web:/usr/share/nginx/html:ro
-    # depends_on:
-    #   - app
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

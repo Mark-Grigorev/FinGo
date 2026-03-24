@@ -86,6 +86,21 @@ make build     # собрать бинарник
 | `DB_PASSWORD`       | —              | Пароль БД                |
 | `DB_NAME`           | `fingo`        | Имя базы данных          |
 
+### Коды завершения
+
+При аварийном завершении процесс возвращает уникальный код — это позволяет определить причину сбоя без просмотра кода.
+
+| Код | Константа          | Причина                                                       |
+|-----|--------------------|---------------------------------------------------------------|
+| `0` | `exitOK`           | Успешное завершение (штатный shutdown по сигналу)             |
+| `2` | `exitConfigError`  | Ошибка загрузки конфигурации (например, не задан `DB_CONN_STRING`) |
+| `3` | `exitTokenError`   | Ошибка инициализации PASETO-токенера (неверный `TOKEN_SYMMETRIC_KEY`) |
+| `4` | `exitDBConnect`    | Не удалось подключиться к базе данных (недоступен PostgreSQL) |
+| `5` | `exitDBMigrate`    | Ошибка выполнения миграций БД                                 |
+| `6` | `exitServerShutdown` | Graceful shutdown не завершился в отведённое время          |
+
+> Код `1` зарезервирован системой (panic в `main`). Приложение его не использует.
+
 ### Лицензия
 
 MIT
@@ -173,6 +188,21 @@ make build     # build binary
 | `DB_USER`           | `fingo`        | Database user            |
 | `DB_PASSWORD`       | —              | Database password        |
 | `DB_NAME`           | `fingo`        | Database name            |
+
+### Exit Codes
+
+Each failure scenario returns a unique exit code so you can identify the root cause without reading the source.
+
+| Code | Constant           | Reason                                                        |
+|------|--------------------|---------------------------------------------------------------|
+| `0`  | `exitOK`           | Clean exit (graceful shutdown on signal)                      |
+| `2`  | `exitConfigError`  | Configuration load failed (e.g. `DB_CONN_STRING` not set)     |
+| `3`  | `exitTokenError`   | PASETO token maker init failed (invalid `TOKEN_SYMMETRIC_KEY`) |
+| `4`  | `exitDBConnect`    | Could not connect to the database (PostgreSQL unreachable)    |
+| `5`  | `exitDBMigrate`    | Database migration failed                                     |
+| `6`  | `exitServerShutdown` | Graceful shutdown did not complete in time                  |
+
+> Code `1` is reserved by the Go runtime (unrecovered panic). The application never returns it explicitly.
 
 ### License
 

@@ -23,8 +23,8 @@
     .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
   </style>
 </head>
-<body x-cloak>
-<div class="app-layout" x-data="dashboardPage()">
+<body>
+<div class="app-layout" x-data="dashboardPage()" x-cloak>
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -33,11 +33,11 @@
       </div>
       <span>FinGo</span>
     </div>
-    <a href="dashboard.html" class="nav-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
-    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
-    <a href="transactions.html" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
-    <a href="categories.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
-    <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <a href="/dashboard" class="nav-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="/accounts" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="/transactions" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="/reports" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
     <div class="sidebar-spacer"></div>
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
@@ -124,7 +124,7 @@
             <div class="card">
               <div class="section-header" style="margin-bottom:8px">
                 <span style="font-weight:600;font-size:14px">Последние транзакции</span>
-                <a href="transactions.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+                <a href="/transactions" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
               </div>
 
               <template x-for="tx in transactions" :key="tx.id">
@@ -168,14 +168,14 @@
                   </div>
                 </template>
               </div>
-              <a href="budgets.html" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
+              <a href="/budgets" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
             </div>
 
             <!-- Recurring payments (static) -->
             <div class="card">
               <div class="section-header" style="margin-bottom:8px">
                 <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
-                <a href="recurring.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+                <a href="/recurring" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
               </div>
               <div class="tx-row">
                 <div class="tx-icon">🎬</div>
@@ -226,21 +226,6 @@
     };
   }
 
-  const fmt = {
-    money(v) {
-      if (v == null) return '₽ 0';
-      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    },
-    date(v) {
-      if (!v) return '—';
-      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-    },
-    pct(v) {
-      if (v == null) return '0%';
-      const arrow = v >= 0 ? '▲' : '▼';
-      return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
-    },
-  };
 </script>
 </body>
 </html>
