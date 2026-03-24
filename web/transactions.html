@@ -9,9 +9,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 6px; height: 44px; margin-bottom: 4px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+    .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
+  </style>
 </head>
-<body>
-<div class="app-layout">
+<body x-cloak>
+<div class="app-layout" x-data="transactionsPage()">
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
@@ -38,14 +46,23 @@
       </a>
     </div>
 
+    <!-- Error state -->
+    <div class="error-msg" x-show="error" x-text="'Ошибка загрузки: ' + error"></div>
+
     <!-- Filters -->
     <div class="filters-bar">
-      <div class="filter-chip active">
+      <div class="filter-chip" :class="filters.from && filters.to ? 'active' : ''" @click="toggleDateFilter()">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        01.03 — 24.03.2026
+        <span x-text="filters.from && filters.to ? fmt.date(filters.from) + ' — ' + fmt.date(filters.to) : 'Все даты'"></span>
       </div>
-      <div class="filter-chip">Все категории</div>
-      <div class="filter-chip">Все счета</div>
+      <div class="filter-chip" :class="filters.category_id ? 'active' : ''"
+           @click="filters.category_id = ''; load()">
+        <span x-text="filters.category_id ? 'Категория: ' + filters.category_id : 'Все категории'"></span>
+      </div>
+      <div class="filter-chip" :class="filters.account_id ? 'active' : ''"
+           @click="filters.account_id = ''; load()">
+        <span x-text="filters.account_id ? 'Счёт: ' + filters.account_id : 'Все счета'"></span>
+      </div>
     </div>
 
     <div class="table-container">
@@ -62,112 +79,148 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">24.03</td>
-            <td>Пятёрочка</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#e74c3c"></span>Продукты</span></td>
-            <td style="color:var(--muted-fg)">—</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 1,420</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">23.03</td>
-            <td>Зарплата</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#2ecc71"></span>Доход</span></td>
-            <td style="color:var(--muted-fg)">Аванс за март</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-pos">+₽ 115,600</td>
-            <td><span class="tag tag-income">Доход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">22.03</td>
-            <td>Транспорт</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#3498db"></span>Транспорт</span></td>
-            <td style="color:var(--muted-fg)">Яндекс Такси</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 384</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">22.03</td>
-            <td>Ресторан</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#e67e22"></span>Кафе и рестораны</span></td>
-            <td style="color:var(--muted-fg)">Яндекс Лавка</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 2,154</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">20.03</td>
-            <td>Покупки</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#9b59b6"></span>Одежда</span></td>
-            <td style="color:var(--muted-fg)">Zara</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 8,350</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">20.03</td>
-            <td>Платёж</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#1abc9c"></span>КофелЛойер</span></td>
-            <td style="color:var(--muted-fg)">Кофе в офисе</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 490</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">19.03</td>
-            <td>Жильё</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#f39c12"></span>Аренда</span></td>
-            <td style="color:var(--muted-fg)">Аренда квартиры</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 45,000</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">18.03</td>
-            <td>Спорт</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#27ae60"></span>Спорт</span></td>
-            <td style="color:var(--muted-fg)">World Class</td>
-            <td style="color:var(--muted-fg)">Основная карта</td>
-            <td class="amount-neg">-₽ 7,900</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">17.03</td>
-            <td>Фриланс</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#2ecc71"></span>Фриланс</span></td>
-            <td style="color:var(--muted-fg)">Word Press сайт</td>
-            <td style="color:var(--muted-fg)">Наличные</td>
-            <td class="amount-pos">+₽ 25,000</td>
-            <td><span class="tag tag-income">Доход</span></td>
-          </tr>
-          <tr>
-            <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px">15.03</td>
-            <td>Едасам</td>
-            <td><span style="display:flex;align-items:center;gap:6px"><span class="cat-dot" style="background:#e74c3c"></span>Кафе и рестораны</span></td>
-            <td style="color:var(--muted-fg)">Узбекская кухня</td>
-            <td style="color:var(--muted-fg)">Наличные</td>
-            <td class="amount-neg">-₽ 3,090</td>
-            <td><span class="tag tag-expense">Расход</span></td>
-          </tr>
+          <!-- Skeleton rows while loading -->
+          <template x-if="loading">
+            <template x-for="i in 8" :key="i">
+              <tr>
+                <td colspan="7" style="padding:4px 0">
+                  <div class="skeleton-row"></div>
+                </td>
+              </tr>
+            </template>
+          </template>
+
+          <!-- Transaction rows -->
+          <template x-if="!loading">
+            <template x-for="tx in transactions" :key="tx.id">
+              <tr>
+                <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px" x-text="fmt.date(tx.date)"></td>
+                <td x-text="tx.name"></td>
+                <td>
+                  <span style="display:flex;align-items:center;gap:6px">
+                    <span class="cat-dot" :style="'background:' + (tx.category_color || '#888')"></span>
+                    <span x-text="tx.category_name || '—'"></span>
+                  </span>
+                </td>
+                <td style="color:var(--muted-fg)" x-text="tx.description || '—'"></td>
+                <td style="color:var(--muted-fg)" x-text="tx.account_name || '—'"></td>
+                <td :class="typeClass(tx.type)"
+                    x-text="amountPrefix(tx.type) + fmt.money(tx.amount)"></td>
+                <td><span class="tag" :class="tagClass(tx.type)" x-text="tagLabel(tx.type)"></span></td>
+              </tr>
+            </template>
+          </template>
+
+          <!-- Empty state -->
+          <template x-if="!loading && transactions.length === 0">
+            <tr>
+              <td colspan="7" style="text-align:center;color:var(--muted-fg);padding:32px 0">
+                Транзакции не найдены
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
 
       <!-- Pagination -->
       <div class="pagination" style="justify-content:space-between;align-items:center">
-        <span style="font-size:13px;color:var(--muted-fg)">Показано 1-10 из 366</span>
+        <span style="font-size:13px;color:var(--muted-fg)"
+              x-text="'Показано ' + ((page - 1) * perPage + 1) + '-' + Math.min(page * perPage, total) + ' из ' + total"></span>
         <div style="display:flex;gap:4px">
-          <button class="page-btn active">1</button>
-          <button class="page-btn">2</button>
-          <button class="page-btn">3</button>
-          <span style="color:var(--muted-fg);padding:0 4px;line-height:32px">…</span>
-          <button class="page-btn">37</button>
+          <button class="page-btn" :disabled="page <= 1" @click="goTo(page - 1)">&lsaquo;</button>
+
+          <template x-for="p in visiblePages()" :key="p">
+            <template x-if="p === '...'">
+              <span style="color:var(--muted-fg);padding:0 4px;line-height:32px">…</span>
+            </template>
+            <template x-if="p !== '...'">
+              <button class="page-btn" :class="p === page ? 'active' : ''" @click="goTo(p)" x-text="p"></button>
+            </template>
+          </template>
+
+          <button class="page-btn" :disabled="page >= totalPages" @click="goTo(page + 1)">&rsaquo;</button>
         </div>
       </div>
     </div>
   </main>
 </div>
+
+<script>
+  function transactionsPage() {
+    return {
+      loading: true,
+      error: null,
+      transactions: [],
+      total: 0,
+      page: 1,
+      perPage: 10,
+      filters: { from: '', to: '', category_id: '', account_id: '' },
+      get totalPages() { return Math.ceil(this.total / this.perPage) || 1; },
+      async init() { await this.load(); },
+      async load() {
+        this.loading = true;
+        try {
+          const q = new URLSearchParams({ page: this.page, limit: this.perPage, ...this.filters });
+          for (const [k, v] of [...q]) if (!v) q.delete(k);
+          const res = await api.get('/transactions?' + q);
+          this.transactions = res.items ?? res;
+          this.total = res.total ?? this.transactions.length;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      async goTo(p) {
+        if (p < 1 || p > this.totalPages) return;
+        this.page = p;
+        await this.load();
+      },
+      toggleDateFilter() {
+        if (this.filters.from && this.filters.to) {
+          this.filters.from = '';
+          this.filters.to = '';
+        } else {
+          // default to current month
+          const now = new Date();
+          const y = now.getFullYear(), m = now.getMonth();
+          this.filters.from = new Date(y, m, 1).toISOString().slice(0, 10);
+          this.filters.to = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+        }
+        this.page = 1;
+        this.load();
+      },
+      visiblePages() {
+        const total = this.totalPages;
+        const cur = this.page;
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+        const pages = [];
+        pages.push(1);
+        if (cur > 3) pages.push('...');
+        for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+        if (cur < total - 2) pages.push('...');
+        pages.push(total);
+        return pages;
+      },
+      typeClass(type) { return type === 'income' ? 'amount-pos' : 'amount-neg'; },
+      tagClass(type) { return type === 'income' ? 'tag-income' : 'tag-expense'; },
+      tagLabel(type) { return type === 'income' ? 'Доход' : 'Расход'; },
+      amountPrefix(type) { return type === 'income' ? '+' : '-'; },
+    };
+  }
+
+  const fmt = {
+    money(v) {
+      if (v == null) return '₽ 0';
+      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    date(v) {
+      if (!v) return '—';
+      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    },
+    pct(v) {
+      if (v == null) return '0%';
+      const arrow = v >= 0 ? '▲' : '▼';
+      return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
+    },
+  };
+</script>
 </body>
 </html>

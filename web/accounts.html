@@ -9,9 +9,17 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 8px; height: 64px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+    .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
+  </style>
 </head>
-<body>
-<div class="app-layout">
+<body x-cloak>
+<div class="app-layout" x-data="accountsPage()">
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
@@ -38,57 +46,91 @@
       </a>
     </div>
 
-    <!-- Total -->
+    <!-- Error state -->
+    <div class="error-msg" x-show="error" x-text="'Ошибка загрузки: ' + error"></div>
+
+    <!-- Total balance -->
     <div class="balance-card" style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div class="balance-label">Общий баланс</div>
-        <div class="balance-value">₽ 1 247 650</div>
+        <div class="balance-value" x-text="fmt.money(totalBalance)"></div>
       </div>
       <div class="icon-btn" style="width:40px;height:40px">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
     </div>
 
+    <!-- Skeleton while loading -->
+    <template x-if="loading">
+      <div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+      </div>
+    </template>
+
     <!-- Account list -->
-    <div class="account-item">
-      <div class="account-icon" style="background:#1a3d6e">💳</div>
-      <div class="account-info">
-        <div class="account-name">Основная карта</div>
-        <div class="account-type">Дебетовая карта · Сбербанк</div>
-      </div>
-      <div class="account-amount">₽ 543 300</div>
-      <div class="account-actions">
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div>
-      </div>
-    </div>
+    <template x-if="!loading">
+      <div>
+        <template x-for="acc in accounts" :key="acc.id">
+          <div class="account-item">
+            <div class="account-icon" :style="'background:' + (acc.color || '#1a3d6e')" x-text="acc.icon || '💳'"></div>
+            <div class="account-info">
+              <div class="account-name" x-text="acc.name"></div>
+              <div class="account-type" x-text="acc.type + (acc.bank ? ' · ' + acc.bank : '')"></div>
+            </div>
+            <div class="account-amount" x-text="fmt.money(acc.balance)"></div>
+            <div class="account-actions">
+              <div class="icon-btn">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <div class="icon-btn" @click="deleteAccount(acc.id)" style="cursor:pointer">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              </div>
+            </div>
+          </div>
+        </template>
 
-    <div class="account-item">
-      <div class="account-icon" style="background:#1d3a1a">💵</div>
-      <div class="account-info">
-        <div class="account-name">Наличные</div>
-        <div class="account-type">Кошелёк</div>
+        <div x-show="accounts.length === 0 && !error" style="color:var(--muted-fg);font-size:13px;padding:24px 0;text-align:center">
+          Нет счетов. Добавьте первый счёт.
+        </div>
       </div>
-      <div class="account-amount">₽ 85 200</div>
-      <div class="account-actions">
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div>
-      </div>
-    </div>
-
-    <div class="account-item">
-      <div class="account-icon" style="background:#2a1a3d">🏦</div>
-      <div class="account-info">
-        <div class="account-name">Накопительный счёт</div>
-        <div class="account-type">Сберегательный · Тинькофф</div>
-      </div>
-      <div class="account-amount">₽ 620 150</div>
-      <div class="account-actions">
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-        <div class="icon-btn"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div>
-      </div>
-    </div>
+    </template>
   </main>
 </div>
+
+<script>
+  function accountsPage() {
+    return {
+      loading: true,
+      error: null,
+      accounts: [],
+      get totalBalance() { return this.accounts.reduce((s, a) => s + (a.balance || 0), 0); },
+      async init() {
+        try {
+          const res = await api.get('/accounts');
+          this.accounts = res.items ?? res;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      async deleteAccount(id) {
+        if (!confirm('Удалить счёт?')) return;
+        await api.delete('/accounts/' + id);
+        this.accounts = this.accounts.filter(a => a.id !== id);
+      },
+    };
+  }
+
+  const fmt = {
+    money(v) {
+      if (v == null) return '₽ 0';
+      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    date(v) {
+      if (!v) return '—';
+      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    },
+  };
+</script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" x-cloak>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +9,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
 </head>
 <body>
 <div class="app-layout">
@@ -26,7 +31,7 @@
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
 
-  <main class="main-content">
+  <main class="main-content" x-data="recurringPage()">
     <div class="page-header">
       <div class="page-title">
         <h1>Регулярные платежи</h1>
@@ -37,85 +42,84 @@
       </a>
     </div>
 
+    <!-- Error state -->
+    <div x-show="error" class="error-state" x-text="error"></div>
+
+    <!-- Skeleton — summary cards -->
+    <div class="stats-grid" style="margin-bottom:24px" x-show="loading">
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+    </div>
+
     <!-- Summary cards -->
-    <div class="stats-grid" style="margin-bottom:24px">
+    <div class="stats-grid" style="margin-bottom:24px" x-show="!loading && !error">
       <div class="stat-card">
         <div class="stat-label">Всего в месяц</div>
-        <div class="stat-value">₽ 24,390</div>
+        <div class="stat-value" x-text="fmt.money(summary.monthly_total)"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Активных</div>
-        <div class="stat-value">6</div>
+        <div class="stat-value" x-text="summary.active_count"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Следующий списания</div>
-        <div class="stat-value" style="font-size:22px">25 мар</div>
+        <div class="stat-value" style="font-size:22px" x-text="summary.next_date ? fmt.date(summary.next_date) : '—'"></div>
       </div>
+    </div>
+
+    <!-- Skeleton — list -->
+    <div x-show="loading" style="display:flex;flex-direction:column;gap:0">
+      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
     </div>
 
     <!-- Recurring list -->
-    <div style="display:flex;flex-direction:column;gap:0">
-      <div class="recurring-item">
-        <div class="recurring-icon">🎬</div>
-        <div class="recurring-info">
-          <div class="recurring-name">Амедиатека кинотека</div>
-          <div class="recurring-desc">Каждый Ежемесячно · 1-го числа</div>
+    <div x-show="!loading && !error" style="display:flex;flex-direction:column;gap:0">
+      <template x-for="p in payments" :key="p.id">
+        <div class="recurring-item" :style="p.status === 'overdue' ? 'border:1px solid var(--destructive)' : ''">
+          <div class="recurring-icon" x-text="p.icon ?? '💳'"></div>
+          <div class="recurring-info">
+            <div class="recurring-name" x-text="p.name"></div>
+            <div class="recurring-desc" x-text="p.description"></div>
+          </div>
+          <div class="recurring-amount amount-neg" x-text="fmt.money(p.amount)"></div>
+          <template x-if="p.status === 'overdue'">
+            <a href="#" class="btn btn-primary" style="font-size:12px;padding:6px 12px">Оплатить сейчас</a>
+          </template>
+          <template x-if="p.status !== 'overdue'">
+            <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px" @click.prevent="cancel(p.id)">Отменить</a>
+          </template>
         </div>
-        <div class="recurring-amount amount-neg">₽ 65,080</div>
-        <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Отменить</a>
-      </div>
-
-      <div class="recurring-item">
-        <div class="recurring-icon">🎵</div>
-        <div class="recurring-info">
-          <div class="recurring-name">World Class</div>
-          <div class="recurring-desc">Каждый Ежемесячно · 5-го числа</div>
-        </div>
-        <div class="recurring-amount amount-neg">₽ 7,900</div>
-        <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Отменить</a>
-      </div>
-
-      <div class="recurring-item">
-        <div class="recurring-icon">🍕</div>
-        <div class="recurring-info">
-          <div class="recurring-name">Яндекс Плюс</div>
-          <div class="recurring-desc">Разделить Ежемесячно · 10-го числа</div>
-        </div>
-        <div class="recurring-amount amount-neg">₽ 399</div>
-        <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Продлить</a>
-      </div>
-
-      <div class="recurring-item" style="border:1px solid var(--destructive)">
-        <div class="recurring-icon">📱</div>
-        <div class="recurring-info">
-          <div class="recurring-name">МТС Связь</div>
-          <div class="recurring-desc">Истёк · Ежемесячно · 15-го числа</div>
-        </div>
-        <div class="recurring-amount amount-neg">₽ 990</div>
-        <a href="#" class="btn btn-primary" style="font-size:12px;padding:6px 12px">Оплатить сейчас</a>
-      </div>
-
-      <div class="recurring-item">
-        <div class="recurring-icon">💼</div>
-        <div class="recurring-info">
-          <div class="recurring-name">ЖКХ</div>
-          <div class="recurring-desc">Каждый Ежемесячно · 20-го числа</div>
-        </div>
-        <div class="recurring-amount amount-neg">₽ 8,700</div>
-        <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Отменить</a>
-      </div>
-
-      <div class="recurring-item">
-        <div class="recurring-icon">🛡️</div>
-        <div class="recurring-info">
-          <div class="recurring-name">VPN/NordVPN</div>
-          <div class="recurring-desc">Годовое Ежегодно · 1 раз в год</div>
-        </div>
-        <div class="recurring-amount amount-neg">₽ 1,901</div>
-        <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Продлить</a>
-      </div>
+      </template>
     </div>
   </main>
 </div>
+
+<script>
+  function recurringPage() {
+    return {
+      loading: true, error: null,
+      summary: { monthly_total:0, active_count:0, next_date:'' },
+      payments: [],
+      async init() {
+        try {
+          const res = await api.get('/recurring');
+          this.summary = res.summary ?? {};
+          this.payments = res.items ?? res;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      async cancel(id) {
+        if (!confirm('Отменить платёж?')) return;
+        await api.delete('/recurring/' + id);
+        this.payments = this.payments.filter(p => p.id !== id);
+        this.summary.active_count--;
+      }
+    };
+  }
+</script>
 </body>
 </html>

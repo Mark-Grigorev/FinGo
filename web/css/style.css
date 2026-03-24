@@ -1,5 +1,42 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ─── ALPINE: скрыть до инициализации ────────────── */
+[x-cloak] { display: none !important; }
+
+/* ─── SKELETON LOADER ────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #1f1f1f 25%, #2a2a2a 50%, #1f1f1f 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+.skeleton-text  { height: 14px; margin-bottom: 8px; }
+.skeleton-title { height: 36px; width: 220px; margin-bottom: 16px; }
+.skeleton-card  { height: 100px; border-radius: 12px; }
+.skeleton-row   { height: 48px; border-radius: 6px; margin-bottom: 4px; }
+
+/* ─── ERROR STATE ────────────────────────────────── */
+.error-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; padding: 48px;
+  color: var(--destructive); text-align: center;
+}
+.error-state p { font-size: 13px; color: var(--muted-fg); max-width: 320px; }
+
+/* ─── SPINNER ────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 :root {
   --bg: #111111;
   --card: #1A1A1A;

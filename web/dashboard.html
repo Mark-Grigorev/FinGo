@@ -9,16 +9,22 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     .total-section { margin-bottom: 20px; }
     .total-label { font-size: 13px; color: var(--muted-fg); margin-bottom: 8px; }
     .total-value { font-family: var(--font-mono); font-size: 42px; font-weight: 700; line-height: 1; margin-bottom: 10px; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    [x-cloak] { display: none !important; }
+    .skeleton-card { background: var(--surface-2, #2a2a2a); border-radius: 8px; height: 80px; animation: pulse 1.5s ease-in-out infinite; }
+    .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 6px; height: 44px; margin-bottom: 8px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+    .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
   </style>
 </head>
-<body>
-<div class="app-layout">
+<body x-cloak>
+<div class="app-layout" x-data="dashboardPage()">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -41,174 +47,200 @@
     <div class="page-header">
       <div class="page-title">
         <h1>Главная</h1>
-        <p>Добро пожаловать, Алексей</p>
+        <p>Добро пожаловать</p>
       </div>
-      <span class="page-date">Март 2026</span>
+      <span class="page-date" x-text="new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})"></span>
     </div>
 
-    <!-- Total balance -->
-    <div class="card" style="margin-bottom:20px">
-      <div class="total-label">Общий баланс</div>
-      <div class="total-value">₽ 1,247,650.00</div>
-      <span class="stat-badge badge-up">▲ 4.2%  за месяц</span>
-    </div>
+    <!-- Error state -->
+    <div class="error-msg" x-show="error" x-text="'Ошибка загрузки: ' + error"></div>
 
-    <!-- Stats -->
-    <div class="stats-grid" style="margin-bottom:20px">
-      <div class="stat-card">
-        <div class="stat-label">Доходы</div>
-        <div class="stat-value">₽ 285,000</div>
-        <span class="stat-badge badge-up">▲ 12.5%</span>
+    <!-- Skeleton loaders while loading -->
+    <template x-if="loading">
+      <div>
+        <div class="skeleton-card" style="margin-bottom:20px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="skeleton-card" style="height:200px;margin-bottom:20px"></div>
+            <div class="skeleton-card" style="height:220px"></div>
+          </div>
+          <div>
+            <div class="skeleton-card" style="height:220px;margin-bottom:20px"></div>
+            <div class="skeleton-card" style="height:160px"></div>
+          </div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Расходы</div>
-        <div class="stat-value">₽ 178,430</div>
-        <span class="stat-badge badge-down">▼ 3.7%</span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Накопления</div>
-        <div class="stat-value">₽ 106,570</div>
-        <span class="stat-badge badge-neutral">37.4% от дохода</span>
-      </div>
-    </div>
+    </template>
 
-    <div class="dashboard-cols">
-      <!-- Left column -->
-      <div class="dashboard-left">
-        <!-- Chart -->
+    <!-- Content after loading -->
+    <template x-if="!loading">
+      <div>
+        <!-- Total balance -->
         <div class="card" style="margin-bottom:20px">
-          <div class="section-header">
-            <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
-            <div class="chart-legend">
-              <div class="legend-item"><div class="legend-dot" style="background:#FF8400"></div>Доходы</div>
-              <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Расходы</div>
-            </div>
+          <div class="total-label">Общий баланс</div>
+          <div class="total-value" x-text="fmt.money(summary.balance)"></div>
+          <span class="stat-badge" :class="badgeClass(summary.balance_pct)" x-text="fmt.pct(summary.balance_pct) + ' за месяц'"></span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-label">Доходы</div>
+            <div class="stat-value" x-text="fmt.money(summary.income)"></div>
+            <span class="stat-badge" :class="badgeClass(summary.income_pct)" x-text="fmt.pct(summary.income_pct)"></span>
           </div>
-          <div class="chart-container">
-            <canvas id="incomeChart"></canvas>
+          <div class="stat-card">
+            <div class="stat-label">Расходы</div>
+            <div class="stat-value" x-text="fmt.money(summary.expenses)"></div>
+            <span class="stat-badge" :class="badgeClass(summary.expenses_pct)" x-text="fmt.pct(summary.expenses_pct)"></span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Накопления</div>
+            <div class="stat-value" x-text="fmt.money(summary.savings)"></div>
+            <span class="stat-badge badge-neutral" x-text="fmt.pct(summary.savings_pct) + ' от дохода'"></span>
           </div>
         </div>
 
-        <!-- Recent transactions -->
-        <div class="card">
-          <div class="section-header" style="margin-bottom:8px">
-            <span style="font-weight:600;font-size:14px">Последние транзакции</span>
-            <a href="transactions.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+        <div class="dashboard-cols">
+          <!-- Left column -->
+          <div class="dashboard-left">
+            <!-- Chart placeholder (Chart.js integration pending real API data) -->
+            <!-- TODO: integrate Chart.js with /api/dashboard/chart once endpoint is available -->
+            <div class="card" style="margin-bottom:20px">
+              <div class="section-header">
+                <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
+              </div>
+              <div class="chart-container" style="display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:13px">
+                График будет доступен после подключения API аналитики
+              </div>
+            </div>
+
+            <!-- Recent transactions -->
+            <div class="card">
+              <div class="section-header" style="margin-bottom:8px">
+                <span style="font-weight:600;font-size:14px">Последние транзакции</span>
+                <a href="transactions.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+              </div>
+
+              <template x-for="tx in transactions" :key="tx.id">
+                <div class="tx-row">
+                  <div class="tx-icon" x-text="tx.icon || '💳'"></div>
+                  <div class="tx-info">
+                    <div class="tx-name" x-text="tx.name"></div>
+                    <div class="tx-cat" x-text="tx.category_name"></div>
+                  </div>
+                  <div class="tx-amount" :class="tx.type === 'income' ? 'amount-pos' : 'amount-neg'"
+                       x-text="(tx.type === 'income' ? '+' : '-') + fmt.money(tx.amount)"></div>
+                </div>
+              </template>
+
+              <div x-show="transactions.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                Нет транзакций
+              </div>
+            </div>
           </div>
 
-          <div class="tx-row">
-            <div class="tx-icon">🛒</div>
-            <div class="tx-info"><div class="tx-name">Пятёрочка</div><div class="tx-cat">Продукты</div></div>
-            <div class="tx-amount amount-neg">-₽ 1,420</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">💼</div>
-            <div class="tx-info"><div class="tx-name">Зарплата</div><div class="tx-cat">Доход</div></div>
-            <div class="tx-amount amount-pos">+₽ 115,600</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🚕</div>
-            <div class="tx-info"><div class="tx-name">Яндекс Такси</div><div class="tx-cat">Транспорт</div></div>
-            <div class="tx-amount amount-neg">-₽ 384</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🍔</div>
-            <div class="tx-info"><div class="tx-name">KFC</div><div class="tx-cat">Кафе и рестораны</div></div>
-            <div class="tx-amount amount-neg">-₽ 850</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🏋️</div>
-            <div class="tx-info"><div class="tx-name">World Class</div><div class="tx-cat">Спорт</div></div>
-            <div class="tx-amount amount-neg">-₽ 7,900</div>
+          <!-- Right column -->
+          <div class="dashboard-right">
+            <!-- Budget overview -->
+            <div class="card" style="margin-bottom:20px">
+              <div class="section-header">
+                <span style="font-weight:600;font-size:14px">Бюджеты</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <template x-for="b in budgets" :key="b.id">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                      <span :style="b.pct > 100 ? 'color:var(--destructive);font-weight:600' : ''" x-text="b.name + (b.pct > 100 ? ' ⚠' : '')"></span>
+                      <span style="font-family:var(--font-mono)" :style="b.pct > 100 ? 'color:var(--destructive)' : ''"
+                            x-text="fmt.money(b.spent) + ' / ' + fmt.money(b.limit)"></span>
+                    </div>
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bar"
+                           :class="progressClass(b.pct)"
+                           :style="'width:' + Math.min(b.pct, 100) + '%'"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <a href="budgets.html" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
+            </div>
+
+            <!-- Recurring payments (static) -->
+            <div class="card">
+              <div class="section-header" style="margin-bottom:8px">
+                <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
+                <a href="recurring.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🎬</div>
+                <div class="tx-info"><div class="tx-name">Амедиатека</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 65,080</div>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🎵</div>
+                <div class="tx-info"><div class="tx-name">World Class</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 7,900</div>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🍕</div>
+                <div class="tx-info"><div class="tx-name">Яндекс Плюс</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 399</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Right column -->
-      <div class="dashboard-right">
-        <!-- Budget overview -->
-        <div class="card" style="margin-bottom:20px">
-          <div class="section-header">
-            <span style="font-weight:600;font-size:14px">Pet Projects</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                <span>Продукты</span><span style="font-family:var(--font-mono)">₽ 12,400 / ₽ 20,000</span>
-              </div>
-              <div class="progress-bar-wrap"><div class="progress-bar ok" style="width:62%"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                <span>Рестораны</span><span style="font-family:var(--font-mono)">₽ 8,500 / ₽ 10,000</span>
-              </div>
-              <div class="progress-bar-wrap"><div class="progress-bar warn" style="width:85%"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                <span style="color:var(--destructive);font-weight:600">Жильё <span style="font-size:11px;background:#3d1a1a;padding:2px 6px;border-radius:4px">Превышен</span></span>
-                <span style="font-family:var(--font-mono);color:var(--destructive)">₽ 61,885 / ₽ 60,000</span>
-              </div>
-              <div class="progress-bar-wrap"><div class="progress-bar over" style="width:100%"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                <span>Спорт</span><span style="font-family:var(--font-mono)">₽ 7,800 / ₽ 10,000</span>
-              </div>
-              <div class="progress-bar-wrap"><div class="progress-bar ok" style="width:78%"></div></div>
-            </div>
-          </div>
-          <a href="budgets.html" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
-        </div>
-
-        <!-- Recurring payments -->
-        <div class="card">
-          <div class="section-header" style="margin-bottom:8px">
-            <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
-            <a href="recurring.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🎬</div>
-            <div class="tx-info"><div class="tx-name">Амедиатека</div><div class="tx-cat">Ежемесячно</div></div>
-            <div class="tx-amount amount-neg">-₽ 65,080</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🎵</div>
-            <div class="tx-info"><div class="tx-name">World Class</div><div class="tx-cat">Ежемесячно</div></div>
-            <div class="tx-amount amount-neg">-₽ 7,900</div>
-          </div>
-          <div class="tx-row">
-            <div class="tx-icon">🍕</div>
-            <div class="tx-info"><div class="tx-name">Яндекс Плюс</div><div class="tx-cat">Ежемесячно</div></div>
-            <div class="tx-amount amount-neg">-₽ 399</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </template>
   </main>
 </div>
 
 <script>
-  const ctx = document.getElementById('incomeChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн'],
-      datasets: [
-        { label: 'Доходы', data: [240000, 195000, 285000, 210000, 260000, 295000], backgroundColor: '#FF8400', borderRadius: 4 },
-        { label: 'Расходы', data: [165000, 142000, 178430, 155000, 148000, 189000], backgroundColor: '#4ade80', borderRadius: 4 }
-      ]
+  function dashboardPage() {
+    return {
+      loading: true,
+      error: null,
+      summary: { balance: 0, income: 0, expenses: 0, savings: 0, balance_pct: 0, income_pct: 0, expenses_pct: 0, savings_pct: 0 },
+      transactions: [],
+      budgets: [],
+      async init() {
+        try {
+          const [summary, txRes, budgets] = await Promise.all([
+            api.get('/dashboard/summary'),
+            api.get('/transactions?limit=5'),
+            api.get('/budgets?limit=4'),
+          ]);
+          this.summary = summary;
+          this.transactions = txRes.items ?? txRes;
+          this.budgets = budgets.items ?? budgets;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      badgeClass(pct) { return pct >= 0 ? 'badge-up' : 'badge-down'; },
+      progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },
+    };
+  }
+
+  const fmt = {
+    money(v) {
+      if (v == null) return '₽ 0';
+      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: '#2E2E2E' }, ticks: { color: '#B8B9B6', font: { family: 'JetBrains Mono', size: 11 } } },
-        y: { grid: { color: '#2E2E2E' }, ticks: { color: '#B8B9B6', font: { family: 'JetBrains Mono', size: 11 }, callback: v => '₽' + (v/1000).toFixed(0)+'K' } }
-      }
-    }
-  });
+    date(v) {
+      if (!v) return '—';
+      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    },
+    pct(v) {
+      if (v == null) return '0%';
+      const arrow = v >= 0 ? '▲' : '▼';
+      return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
+    },
+  };
 </script>
 </body>
 </html>

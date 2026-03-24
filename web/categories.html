@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" x-cloak>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,9 +9,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     .chevron { transition: transform 0.2s; }
     .collapsed .chevron { transform: rotate(-90deg); }
+    [x-cloak] { display: none !important; }
   </style>
 </head>
 <body>
@@ -30,7 +33,7 @@
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
 
-  <main class="main-content">
+  <main class="main-content" x-data="categoriesPage()">
     <div class="page-header">
       <div class="page-title">
         <h1>Категории</h1>
@@ -42,134 +45,89 @@
       </a>
     </div>
 
+    <!-- Error state -->
+    <div x-show="error" class="error-state" x-text="error"></div>
+
+    <!-- Skeleton loaders -->
+    <div x-show="loading">
+      <div class="skeleton skeleton-card" style="height:48px;margin-bottom:4px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:20px"></div>
+      <div class="skeleton skeleton-card" style="height:48px;margin-bottom:4px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+    </div>
+
     <!-- Расходы -->
-    <div class="category-section">
-      <div class="category-section-header" onclick="toggleSection('expenses')">
-        <svg width="16" height="16" viewBox="0 0 24 24" class="chevron" id="chevron-expenses" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <div class="category-section" x-show="!loading && !error">
+      <div class="category-section-header" @click="openSections.expense = !openSections.expense" style="cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :style="openSections.expense ? '' : 'transform:rotate(-90deg)'"><polyline points="6 9 12 15 18 9"/></svg>
         <span class="category-section-title">Расходы</span>
-        <span class="category-count">8 категорий</span>
+        <span class="category-count" x-text="expenses.length + ' категорий'"></span>
       </div>
-      <div id="section-expenses">
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(231,76,60,0.15)"><span class="cat-dot" style="background:#e74c3c"></span></div>
-          <span class="cat-name">Продукты</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
+      <div x-show="openSections.expense">
+        <template x-for="c in expenses" :key="c.id">
+          <div class="category-item">
+            <div class="cat-icon" :style="'background:' + (c.color ? c.color + '26' : 'rgba(231,76,60,0.15)')">
+              <span class="cat-dot" :style="'background:' + c.color"></span>
+            </div>
+            <span class="cat-name" x-text="c.name"></span>
+            <div class="cat-actions">
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              <div class="icon-btn" style="color:var(--destructive)" @click="deleteCategory(c.id)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
+            </div>
           </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(231,76,60,0.15)"><span class="cat-dot" style="background:#e74c3c"></span></div>
-          <span class="cat-name">Рестораны</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(52,152,219,0.15)"><span class="cat-dot" style="background:#3498db"></span></div>
-          <span class="cat-name">Транспорт</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(243,156,18,0.15)"><span class="cat-dot" style="background:#f39c12"></span></div>
-          <span class="cat-name">Жильё</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(46,204,113,0.15)"><span class="cat-dot" style="background:#2ecc71"></span></div>
-          <span class="cat-name">Спорт</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(155,89,182,0.15)"><span class="cat-dot" style="background:#9b59b6"></span></div>
-          <span class="cat-name">Подписки</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(26,188,156,0.15)"><span class="cat-dot" style="background:#1abc9c"></span></div>
-          <span class="cat-name">Одежда</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(231,76,60,0.15)"><span class="cat-dot" style="background:#e74c3c"></span></div>
-          <span class="cat-name">Здоровье</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
 
     <!-- Доходы -->
-    <div class="category-section">
-      <div class="category-section-header" onclick="toggleSection('income')">
-        <svg width="16" height="16" viewBox="0 0 24 24" class="chevron" id="chevron-income" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <div class="category-section" x-show="!loading && !error">
+      <div class="category-section-header" @click="openSections.income = !openSections.income" style="cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" class="chevron" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :style="openSections.income ? '' : 'transform:rotate(-90deg)'"><polyline points="6 9 12 15 18 9"/></svg>
         <span class="category-section-title">Доходы</span>
-        <span class="category-count">4 категории</span>
+        <span class="category-count" x-text="incomes.length + ' категорий'"></span>
       </div>
-      <div id="section-income">
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(46,204,113,0.15)"><span class="cat-dot" style="background:#2ecc71"></span></div>
-          <span class="cat-name">Зарплата</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
+      <div x-show="openSections.income">
+        <template x-for="c in incomes" :key="c.id">
+          <div class="category-item">
+            <div class="cat-icon" :style="'background:' + (c.color ? c.color + '26' : 'rgba(46,204,113,0.15)')">
+              <span class="cat-dot" :style="'background:' + c.color"></span>
+            </div>
+            <span class="cat-name" x-text="c.name"></span>
+            <div class="cat-actions">
+              <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+              <div class="icon-btn" style="color:var(--destructive)" @click="deleteCategory(c.id)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
+            </div>
           </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(52,152,219,0.15)"><span class="cat-dot" style="background:#3498db"></span></div>
-          <span class="cat-name">Фриланс</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(243,156,18,0.15)"><span class="cat-dot" style="background:#f39c12"></span></div>
-          <span class="cat-name">Инвестиции</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
-        <div class="category-item">
-          <div class="cat-icon" style="background:rgba(155,89,182,0.15)"><span class="cat-dot" style="background:#9b59b6"></span></div>
-          <span class="cat-name">Кэшбэк</span>
-          <div class="cat-actions">
-            <div class="icon-btn"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-            <div class="icon-btn" style="color:var(--destructive)"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></div>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-  function toggleSection(id) {
-    const section = document.getElementById('section-' + id);
-    const header = section.previousElementSibling;
-    const chevron = document.getElementById('chevron-' + id);
-    const hidden = section.style.display === 'none';
-    section.style.display = hidden ? '' : 'none';
-    chevron.style.transform = hidden ? '' : 'rotate(-90deg)';
+  function categoriesPage() {
+    return {
+      loading: true, error: null,
+      categories: [],
+      openSections: { expense: true, income: true },
+      async init() {
+        try {
+          const res = await api.get('/categories');
+          this.categories = res.items ?? res;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      get expenses() { return this.categories.filter(c => c.type === 'expense'); },
+      get incomes()   { return this.categories.filter(c => c.type === 'income'); },
+      async deleteCategory(id) {
+        if (!confirm('Удалить категорию?')) return;
+        await api.delete('/categories/' + id);
+        this.categories = this.categories.filter(c => c.id !== id);
+      }
+    };
   }
 </script>
 </body>
