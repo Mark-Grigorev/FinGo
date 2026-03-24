@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru" x-cloak>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGo — Отчёты и аналитика</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    .reports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    .report-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    .report-row:last-child { border-bottom: none; }
+    .report-row-label { color: var(--foreground); }
+    .report-row-value { font-family: var(--font-mono); font-weight: 600; }
+    .report-row-change { font-size: 12px; font-weight: 600; margin-left: 12px; }
+    .up { color: #4ade80; }
+    .down { color: #f87171; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span>FinGo</span>
+    </div>
+    <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="transactions.html" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="categories.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="reports.html" class="nav-item active"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <div class="sidebar-spacer"></div>
+    <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
+  </aside>
+
+  <main class="main-content" x-data="reportsPage()">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Отчёты и аналитика</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="filter-chip active">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <input type="date" x-model="from" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+          &nbsp;—&nbsp;
+          <input type="date" x-model="to" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+        </div>
+        <div class="filter-chip">Экспорт CSV</div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div x-show="error" class="error-state" x-text="error"></div>
+
+    <!-- Skeleton — bar chart -->
+    <div class="card" style="margin-bottom:20px" x-show="loading">
+      <div class="skeleton skeleton-card" style="height:260px"></div>
+    </div>
+
+    <!-- Income/Expense bar chart -->
+    <div class="card" style="margin-bottom:20px" x-show="!loading && !error">
+      <div class="section-header">
+        <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#FF8400"></div>Доходы</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Расходы</div>
+        </div>
+      </div>
+      <div class="chart-container" style="height:220px">
+        <canvas id="reportBarChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Skeleton — reports grid -->
+    <div class="reports-grid" x-show="loading">
+      <div class="skeleton skeleton-card" style="height:320px"></div>
+      <div class="skeleton skeleton-card" style="height:320px"></div>
+    </div>
+
+    <div class="reports-grid" x-show="!loading && !error">
+      <!-- Pie chart -->
+      <div class="card">
+        <div class="section-header" style="margin-bottom:16px">
+          <span style="font-weight:600;font-size:14px">Расходы по категориям</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:24px">
+          <div style="width:160px;height:160px;flex-shrink:0">
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <template x-if="pieData">
+              <template x-for="c in pieData" :key="c.name">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+                  <span class="cat-dot" :style="'background:' + c.color"></span>
+                  <span style="flex:1" x-text="c.name"></span>
+                  <span style="font-family:var(--font-mono)" x-text="fmt.money(c.amount)"></span>
+                </div>
+              </template>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="card">
+        <div class="section-header" style="margin-bottom:16px">
+          <span style="font-weight:600;font-size:14px">Сравнение с прошлым периодом</span>
+        </div>
+
+        <div class="report-row">
+          <div class="report-row-label">Доходы</div>
+          <div style="display:flex;align-items:center">
+            <span class="report-row-value" x-text="fmt.money(comparison.income)"></span>
+            <span class="report-row-change" :class="pctClass(comparison.income_pct)" x-text="(comparison.income_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.income_pct) + '%'"></span>
+          </div>
+        </div>
+        <div class="report-row">
+          <div class="report-row-label">Расходы</div>
+          <div style="display:flex;align-items:center">
+            <span class="report-row-value" x-text="fmt.money(comparison.expenses)"></span>
+            <span class="report-row-change" :class="pctClass(comparison.expenses_pct)" x-text="(comparison.expenses_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.expenses_pct) + '%'"></span>
+          </div>
+        </div>
+        <div class="report-row">
+          <div class="report-row-label">Накопления</div>
+          <div style="display:flex;align-items:center">
+            <span class="report-row-value" x-text="fmt.money(comparison.savings)"></span>
+            <span class="report-row-change" :class="pctClass(comparison.savings_pct)" x-text="(comparison.savings_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.savings_pct) + '%'"></span>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div style="font-size:12px;color:var(--muted-fg);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Топ категории расходов</div>
+        <template x-for="c in topCategories" :key="c.name">
+          <div class="report-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="cat-dot" :style="'background:' + c.color"></span>
+              <span x-text="c.name"></span>
+            </div>
+            <span style="font-family:var(--font-mono)" x-text="fmt.money(c.amount)"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  function reportsPage() {
+    return {
+      loading: true, error: null,
+      from: '2026-01-01', to: '2026-03-31',
+      barData: null, pieData: null,
+      comparison: { income:0, income_pct:0, expenses:0, expenses_pct:0, savings:0, savings_pct:0 },
+      topCategories: [],
+      async init() { await this.load(); },
+      async load() {
+        this.loading = true;
+        try {
+          const res = await api.get(`/reports?from=${this.from}&to=${this.to}`);
+          this.barData = res.bar_data;
+          this.pieData = res.pie_data;
+          this.comparison = res.comparison;
+          this.topCategories = res.top_categories ?? [];
+          await this.$nextTick();
+          this.renderCharts();
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      renderCharts() {
+        if (!this.barData || !this.pieData) return;
+        // Bar chart
+        const barCtx = document.getElementById('reportBarChart')?.getContext('2d');
+        if (barCtx && window.Chart) {
+          if (window._barChart) window._barChart.destroy();
+          window._barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+              labels: this.barData.map(d => d.label),
+              datasets: [
+                { label:'Доходы', data: this.barData.map(d=>d.income), backgroundColor:'#FF8400', borderRadius:6 },
+                { label:'Расходы', data: this.barData.map(d=>d.expenses), backgroundColor:'#4ade80', borderRadius:6 }
+              ]
+            },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{color:'#2E2E2E'},ticks:{color:'#B8B9B6'}}, y:{grid:{color:'#2E2E2E'},ticks:{color:'#B8B9B6', callback: v=>'₽'+(v/1000).toFixed(0)+'K'}} }}
+          });
+        }
+        // Pie chart
+        const pieCtx = document.getElementById('pieChart')?.getContext('2d');
+        if (pieCtx && window.Chart) {
+          if (window._pieChart) window._pieChart.destroy();
+          window._pieChart = new Chart(pieCtx, {
+            type:'doughnut',
+            data:{ labels: this.pieData.map(d=>d.name), datasets:[{ data: this.pieData.map(d=>d.amount), backgroundColor: this.pieData.map(d=>d.color), borderWidth:0 }] },
+            options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}} }
+          });
+        }
+      },
+      pctClass(p) { return p >= 0 ? 'up' : 'down'; },
+    };
+  }
+</script>
+</body>
+</html>

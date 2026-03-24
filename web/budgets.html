@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru" x-cloak>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGo — Бюджеты</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+      <span>FinGo</span>
+    </div>
+    <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="transactions.html" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="categories.html" class="nav-item active"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <div class="sidebar-spacer"></div>
+    <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
+  </aside>
+
+  <main class="main-content" x-data="budgetsPage()">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Бюджеты</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="filter-chip">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <input type="month" x-model="month" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none" />
+        </div>
+        <a href="#" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить бюджет
+        </a>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div x-show="error" class="error-state" x-text="error"></div>
+
+    <!-- Skeleton — summary cards -->
+    <div class="stats-grid" style="margin-bottom:24px" x-show="loading">
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+      <div class="skeleton skeleton-card" style="height:72px"></div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="stats-grid" style="margin-bottom:24px" x-show="!loading && !error">
+      <div class="stat-card">
+        <div class="stat-label">Общий план</div>
+        <div class="stat-value" x-text="fmt.money(summary.total_plan)"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Потрачено</div>
+        <div class="stat-value" x-text="fmt.money(summary.total_spent)"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Остаток</div>
+        <div class="stat-value" x-text="fmt.money(summary.total_remaining)"></div>
+      </div>
+    </div>
+
+    <!-- Skeleton — table -->
+    <div class="table-container" x-show="loading">
+      <div class="skeleton skeleton-row" style="height:44px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
+    </div>
+
+    <!-- Budget table -->
+    <div class="table-container" x-show="!loading && !error">
+      <table>
+        <thead>
+          <tr>
+            <th>Категория</th>
+            <th>Потрачено</th>
+            <th>Лимит</th>
+            <th style="min-width:160px">Прогресс</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="b in budgets" :key="b.id">
+            <tr>
+              <td>
+                <span style="display:flex;align-items:center;gap:8px">
+                  <span class="cat-dot" :style="'background:' + b.color"></span>
+                  <span x-text="b.name"></span>
+                  <span x-show="b.pct > 100" style="font-size:11px;background:#3d1a1a;color:var(--destructive);padding:2px 8px;border-radius:4px;font-weight:600">Превышен</span>
+                </span>
+              </td>
+              <td style="font-family:var(--font-mono)" :style="b.pct > 100 ? 'color:var(--destructive)' : ''" x-text="fmt.money(b.spent)"></td>
+              <td style="font-family:var(--font-mono);color:var(--muted-fg)" x-text="fmt.money(b.limit)"></td>
+              <td>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar" :class="progressClass(b.pct)" :style="'width:' + progressWidth(b.pct)"></div>
+                </div>
+              </td>
+              <td style="font-family:var(--font-mono)" :style="'color:' + pctColor(b.pct)" x-text="b.pct + '%'"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  function budgetsPage() {
+    return {
+      loading: true, error: null,
+      month: new Date().toISOString().slice(0,7),
+      summary: { total_plan:0, total_spent:0, total_remaining:0 },
+      budgets: [],
+      async init() { await this.load(); },
+      async load() {
+        this.loading = true;
+        try {
+          const res = await api.get('/budgets?month=' + this.month);
+          this.summary = res.summary ?? res;
+          this.budgets = res.items ?? res.budgets ?? [];
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },
+      progressWidth(pct) { return Math.min(pct, 100) + '%'; },
+      pctColor(pct) { return pct > 100 ? 'var(--destructive)' : pct > 85 ? 'var(--primary)' : '#4ade80'; }
+    };
+  }
+</script>
+</body>
+</html>

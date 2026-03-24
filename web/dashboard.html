@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGo — Главная</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <style>
+    .total-section { margin-bottom: 20px; }
+    .total-label { font-size: 13px; color: var(--muted-fg); margin-bottom: 8px; }
+    .total-value { font-family: var(--font-mono); font-size: 42px; font-weight: 700; line-height: 1; margin-bottom: 10px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    [x-cloak] { display: none !important; }
+    .skeleton-card { background: var(--surface-2, #2a2a2a); border-radius: 8px; height: 80px; animation: pulse 1.5s ease-in-out infinite; }
+    .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 6px; height: 44px; margin-bottom: 8px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+    .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
+  </style>
+</head>
+<body x-cloak>
+<div class="app-layout" x-data="dashboardPage()">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+      <span>FinGo</span>
+    </div>
+    <a href="dashboard.html" class="nav-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="transactions.html" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="categories.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <div class="sidebar-spacer"></div>
+    <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Главная</h1>
+        <p>Добро пожаловать</p>
+      </div>
+      <span class="page-date" x-text="new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})"></span>
+    </div>
+
+    <!-- Error state -->
+    <div class="error-msg" x-show="error" x-text="'Ошибка загрузки: ' + error"></div>
+
+    <!-- Skeleton loaders while loading -->
+    <template x-if="loading">
+      <div>
+        <div class="skeleton-card" style="margin-bottom:20px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="skeleton-card" style="height:200px;margin-bottom:20px"></div>
+            <div class="skeleton-card" style="height:220px"></div>
+          </div>
+          <div>
+            <div class="skeleton-card" style="height:220px;margin-bottom:20px"></div>
+            <div class="skeleton-card" style="height:160px"></div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Content after loading -->
+    <template x-if="!loading">
+      <div>
+        <!-- Total balance -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="total-label">Общий баланс</div>
+          <div class="total-value" x-text="fmt.money(summary.balance)"></div>
+          <span class="stat-badge" :class="badgeClass(summary.balance_pct)" x-text="fmt.pct(summary.balance_pct) + ' за месяц'"></span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-label">Доходы</div>
+            <div class="stat-value" x-text="fmt.money(summary.income)"></div>
+            <span class="stat-badge" :class="badgeClass(summary.income_pct)" x-text="fmt.pct(summary.income_pct)"></span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Расходы</div>
+            <div class="stat-value" x-text="fmt.money(summary.expenses)"></div>
+            <span class="stat-badge" :class="badgeClass(summary.expenses_pct)" x-text="fmt.pct(summary.expenses_pct)"></span>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Накопления</div>
+            <div class="stat-value" x-text="fmt.money(summary.savings)"></div>
+            <span class="stat-badge badge-neutral" x-text="fmt.pct(summary.savings_pct) + ' от дохода'"></span>
+          </div>
+        </div>
+
+        <div class="dashboard-cols">
+          <!-- Left column -->
+          <div class="dashboard-left">
+            <!-- Chart placeholder (Chart.js integration pending real API data) -->
+            <!-- TODO: integrate Chart.js with /api/dashboard/chart once endpoint is available -->
+            <div class="card" style="margin-bottom:20px">
+              <div class="section-header">
+                <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
+              </div>
+              <div class="chart-container" style="display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:13px">
+                График будет доступен после подключения API аналитики
+              </div>
+            </div>
+
+            <!-- Recent transactions -->
+            <div class="card">
+              <div class="section-header" style="margin-bottom:8px">
+                <span style="font-weight:600;font-size:14px">Последние транзакции</span>
+                <a href="transactions.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+              </div>
+
+              <template x-for="tx in transactions" :key="tx.id">
+                <div class="tx-row">
+                  <div class="tx-icon" x-text="tx.icon || '💳'"></div>
+                  <div class="tx-info">
+                    <div class="tx-name" x-text="tx.name"></div>
+                    <div class="tx-cat" x-text="tx.category_name"></div>
+                  </div>
+                  <div class="tx-amount" :class="tx.type === 'income' ? 'amount-pos' : 'amount-neg'"
+                       x-text="(tx.type === 'income' ? '+' : '-') + fmt.money(tx.amount)"></div>
+                </div>
+              </template>
+
+              <div x-show="transactions.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                Нет транзакций
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div class="dashboard-right">
+            <!-- Budget overview -->
+            <div class="card" style="margin-bottom:20px">
+              <div class="section-header">
+                <span style="font-weight:600;font-size:14px">Бюджеты</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <template x-for="b in budgets" :key="b.id">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                      <span :style="b.pct > 100 ? 'color:var(--destructive);font-weight:600' : ''" x-text="b.name + (b.pct > 100 ? ' ⚠' : '')"></span>
+                      <span style="font-family:var(--font-mono)" :style="b.pct > 100 ? 'color:var(--destructive)' : ''"
+                            x-text="fmt.money(b.spent) + ' / ' + fmt.money(b.limit)"></span>
+                    </div>
+                    <div class="progress-bar-wrap">
+                      <div class="progress-bar"
+                           :class="progressClass(b.pct)"
+                           :style="'width:' + Math.min(b.pct, 100) + '%'"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <a href="budgets.html" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
+            </div>
+
+            <!-- Recurring payments (static) -->
+            <div class="card">
+              <div class="section-header" style="margin-bottom:8px">
+                <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
+                <a href="recurring.html" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🎬</div>
+                <div class="tx-info"><div class="tx-name">Амедиатека</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 65,080</div>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🎵</div>
+                <div class="tx-info"><div class="tx-name">World Class</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 7,900</div>
+              </div>
+              <div class="tx-row">
+                <div class="tx-icon">🍕</div>
+                <div class="tx-info"><div class="tx-name">Яндекс Плюс</div><div class="tx-cat">Ежемесячно</div></div>
+                <div class="tx-amount amount-neg">-₽ 399</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </main>
+</div>
+
+<script>
+  function dashboardPage() {
+    return {
+      loading: true,
+      error: null,
+      summary: { balance: 0, income: 0, expenses: 0, savings: 0, balance_pct: 0, income_pct: 0, expenses_pct: 0, savings_pct: 0 },
+      transactions: [],
+      budgets: [],
+      async init() {
+        try {
+          const [summary, txRes, budgets] = await Promise.all([
+            api.get('/dashboard/summary'),
+            api.get('/transactions?limit=5'),
+            api.get('/budgets?limit=4'),
+          ]);
+          this.summary = summary;
+          this.transactions = txRes.items ?? txRes;
+          this.budgets = budgets.items ?? budgets;
+        } catch(e) { this.error = e.message; }
+        finally { this.loading = false; }
+      },
+      badgeClass(pct) { return pct >= 0 ? 'badge-up' : 'badge-down'; },
+      progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },
+    };
+  }
+
+  const fmt = {
+    money(v) {
+      if (v == null) return '₽ 0';
+      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    date(v) {
+      if (!v) return '—';
+      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    },
+    pct(v) {
+      if (v == null) return '0%';
+      const arrow = v >= 0 ? '▲' : '▼';
+      return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
+    },
+  };
+</script>
+</body>
+</html>

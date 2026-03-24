@@ -1,0 +1,16 @@
+name: GO CI/CD pipeline
+
+on:
+    push:
+        branches: ["main","feaure*","dev"]
+        tags: ['v*']
+    pull_request: 
+        branches: ["main","feaure*","dev"]
+
+jobs:
+    ci:
+        uses: Mark-Grigorev/central-ci-cd/.github/workflows/go-ci-complete.yml@main
+        with:
+            go-version: '1.25.1'
+            linter-version: 'v2.11.4'
+            ubuntu-version: '22.04'
