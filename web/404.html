@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGo — 404</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .error-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); position: relative; overflow: hidden; }
+    .error-nav { display: flex; align-items: center; gap: 8px; padding: 20px 32px; font-family: var(--font-mono); font-size: 16px; font-weight: 700; position: relative; z-index: 1; }
+    .error-nav .logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    .error-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 1; text-align: center; }
+    .error-code { font-family: var(--font-mono); font-size: 96px; font-weight: 700; color: var(--primary); line-height: 1; margin-bottom: 16px; }
+    .error-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+    .error-desc { font-size: 14px; color: var(--muted-fg); max-width: 360px; line-height: 1.7; margin-bottom: 32px; }
+    .error-actions { display: flex; gap: 12px; }
+    .orb-left { width: 300px; height: 300px; background: rgba(255, 132, 0, 0.15); top: 20%; left: 5%; }
+    .orb-right { width: 250px; height: 250px; background: rgba(255, 132, 0, 0.1); top: 15%; right: 5%; }
+  </style>
+</head>
+<body>
+  <div class="error-page">
+    <div class="orb orb-left"></div>
+    <div class="orb orb-right"></div>
+
+    <nav class="error-nav">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+      </div>
+      FinGo
+    </nav>
+
+    <div class="error-body">
+      <div class="error-code">404</div>
+      <h1 class="error-title">Страница не найдена</h1>
+      <p class="error-desc">К сожалению, запрашиваемая страница не существует или была перемещена. Проверьте адрес или вернитесь на главную.</p>
+      <div class="error-actions">
+        <a href="dashboard.html" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          На главную
+        </a>
+        <button class="btn btn-ghost" onclick="history.back()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Назад
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

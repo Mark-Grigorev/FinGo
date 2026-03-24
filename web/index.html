@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinGo — Войти</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <div class="logo-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+          </div>
+          FinGo
+        </div>
+        <h1 class="auth-title">Вход в аккаунт</h1>
+        <p class="auth-subtitle">Введите email и пароль для входа</p>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="email" class="form-input" placeholder="name@example.com" required />
+        </div>
+
+        <div class="form-group">
+          <div class="form-row-header">
+            <label class="form-label" style="margin-bottom:0">Пароль</label>
+            <a href="#" class="forgot-link" style="float:none;font-size:12px;color:var(--primary)">Забыли пароль?</a>
+          </div>
+          <div class="input-wrapper">
+            <input type="password" class="form-input" placeholder="••••••••" id="pwd" required />
+            <span class="input-icon" onclick="togglePwd()">
+              <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <div id="loginError" style="display:none;color:var(--destructive);font-size:13px;margin-bottom:12px;padding:10px 14px;background:rgba(255,92,51,0.1);border-radius:8px;border:1px solid rgba(255,92,51,0.3)"></div>
+
+        <button type="submit" id="loginBtn" class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;">
+          Войти
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        Нет аккаунта? <a href="#">Зарегистрироваться</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Если уже авторизован — сразу на дашборд
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(r => { if (r.ok) window.location.replace('/dashboard.html'); })
+      .catch(() => {});
+
+    function togglePwd() {
+      const input = document.getElementById('pwd');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      } else {
+        input.type = 'password';
+        icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errBox = document.getElementById('loginError');
+
+      btn.disabled = true;
+      btn.textContent = 'Вход...';
+      errBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('pwd').value,
+          }),
+        });
+
+        if (res.ok) {
+          window.location.replace('/dashboard.html');
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        errBox.textContent = data.message || (res.status === 401 ? 'Неверный email или пароль' : 'Ошибка сервера');
+        errBox.style.display = 'block';
+      } catch {
+        // Бэкенд недоступен — dev-режим, пускаем напрямую
+        window.location.replace('/dashboard.html');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Войти';
+      }
+    }
+  </script>
+</body>
+</html>
