@@ -17,12 +17,15 @@ const api = (() => {
     const res = await fetch('/api' + path, opts);
 
     if (res.status === 401) {
-      window.location.replace('/index.html');
+      window.location.replace('/');
       throw new Error('Unauthorized');
     }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || `HTTP ${res.status}`);
+      const err = new Error(data.message || `HTTP ${res.status}`);
+      err.data = data;
+      err.status = res.status;
+      throw err;
     }
     if (res.status === 204) return null;
     return res.json();
@@ -39,7 +42,17 @@ const api = (() => {
 
 /** Утилиты форматирования, доступны глобально */
 const fmt = {
-  money: (n) => '₽\u00a0' + Number(n ?? 0).toLocaleString('ru-RU'),
-  date:  (d) => d ? new Date(d).toLocaleDateString('ru-RU') : '—',
-  pct:   (n) => (n >= 0 ? '▲ ' : '▼ ') + Math.abs(n).toFixed(1) + '%',
+  money(v) {
+    if (v == null) return '₽ 0';
+    return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  },
+  date(v) {
+    if (!v) return '—';
+    return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+  },
+  pct(v) {
+    if (v == null) return '0%';
+    const arrow = v >= 0 ? '▲' : '▼';
+    return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
+  },
 };

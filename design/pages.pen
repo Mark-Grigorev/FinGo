@@ -582,7 +582,7 @@
                           "width": "fill_container",
                           "content": "₽ 1,247,650.00",
                           "lineHeight": 1.5,
-                          "fontFamily": "Times New Roman",
+                          "fontFamily": "Instrument Sans",
                           "fontSize": 48,
                           "fontWeight": "normal",
                           "letterSpacing": -2,
@@ -761,7 +761,7 @@
                               "width": "fill_container",
                               "content": "₽ 285,000",
                               "lineHeight": 1.5,
-                              "fontFamily": "Times New Roman",
+                              "fontFamily": "Instrument Sans",
                               "fontSize": 48,
                               "fontWeight": "normal",
                               "letterSpacing": -2,
@@ -933,7 +933,7 @@
                               "width": "fill_container",
                               "content": "₽ 178,430",
                               "lineHeight": 1.5,
-                              "fontFamily": "Times New Roman",
+                              "fontFamily": "Instrument Sans",
                               "fontSize": 48,
                               "fontWeight": "normal",
                               "letterSpacing": -2,
@@ -1105,7 +1105,7 @@
                               "width": "fill_container",
                               "content": "₽ 106,570",
                               "lineHeight": 1.5,
-                              "fontFamily": "Times New Roman",
+                              "fontFamily": "Instrument Sans",
                               "fontSize": 48,
                               "fontWeight": "normal",
                               "letterSpacing": -2,
@@ -14213,15 +14213,306 @@
               "gap": 24
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "uhq9E",
+          "name": "Main Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "3hop3",
+              "name": "Top Section",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "g5MdL",
+                  "name": "logo",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "SuDl0",
+                      "name": "logoIc",
+                      "width": 36,
+                      "height": 36,
+                      "iconFontName": "account_balance_wallet",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "m4JWZ",
+                      "name": "logoTxt",
+                      "fill": "$--foreground",
+                      "content": "FinGo",
+                      "fontFamily": "Geist",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hkfgo",
+                  "name": "formCard",
+                  "width": 420,
+                  "fill": "$--card",
+                  "cornerRadius": "$--radius-m",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$--border"
+                  },
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2GVeg",
+                      "name": "formTtl",
+                      "fill": "$--foreground",
+                      "content": "Вход в аккаунт",
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QYCo0",
+                      "name": "formSub",
+                      "fill": "$--muted-foreground",
+                      "content": "Введите email и пароль для входа",
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Kj5Hi",
+                      "name": "emailGrp",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j0Zyb",
+                          "name": "emailLbl",
+                          "fill": "$--foreground",
+                          "content": "Email",
+                          "fontFamily": "Geist",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BRthq",
+                          "name": "emailInp",
+                          "width": "fill_container",
+                          "cornerRadius": "$--radius-pill",
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--input"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "KKwAH",
+                              "name": "emailPh",
+                              "fill": "$--muted-foreground",
+                              "content": "alexey@mail.ru",
+                              "fontFamily": "Geist",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jaz1E",
+                      "name": "passGrp",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "88CvH",
+                          "name": "passLbl",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "3CVLa",
+                              "name": "passLt",
+                              "fill": "$--foreground",
+                              "content": "Пароль",
+                              "fontFamily": "Geist",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "YzGhR",
+                              "name": "passLnk",
+                              "fill": "$--primary",
+                              "content": "Забыли пароль?",
+                              "fontFamily": "Geist",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p1pu8",
+                          "name": "passInp",
+                          "width": "fill_container",
+                          "cornerRadius": "$--radius-pill",
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--input"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "0vR2w",
+                              "name": "passPh",
+                              "fill": "$--muted-foreground",
+                              "content": "••••••••",
+                              "fontFamily": "Geist",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon_font",
+                              "id": "8pY4P",
+                              "name": "passEye",
+                              "width": 20,
+                              "height": 20,
+                              "iconFontName": "visibility_off",
+                              "iconFontFamily": "Material Symbols Sharp",
+                              "weight": 100,
+                              "fill": "$--muted-foreground"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pJcOz",
+                      "name": "loginBtn",
+                      "width": "fill_container",
+                      "fill": "$--primary",
+                      "cornerRadius": "$--radius-pill",
+                      "padding": [
+                        14,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "KQ3DV",
+                          "name": "loginTxt",
+                          "fill": "$--primary-foreground",
+                          "content": "Войти",
+                          "fontFamily": "Geist",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ORDQM",
+                      "name": "regRow",
+                      "width": "fill_container",
+                      "gap": 6,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Q4X0s",
+                          "name": "regTxt",
+                          "fill": "$--muted-foreground",
+                          "content": "Нет аккаунта?",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Odrz3",
+                          "name": "regLnk",
+                          "fill": "$--primary",
+                          "content": "Зарегистрироваться",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "x3R9d",
+              "x": 0,
+              "y": 836,
+              "name": "Bottom Section",
+              "enabled": false,
+              "width": "fill_container(1440)",
+              "height": "fit_content(64)",
+              "gap": 24
+            }
+          ]
         }
       ]
     },
     {
       "type": "frame",
       "id": "kOEUn",
-      "x": 14213,
+      "x": 15738,
       "y": -1023,
-      "name": "Ошибка 404",
+      "name": "Страница для ошибок(статус код+описание)",
       "theme": {
         "Mode": "Dark"
       },
@@ -14465,6 +14756,1486 @@
           "height": 200
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "IccKp",
+      "x": 12673,
+      "y": -1023,
+      "name": "Авторизация",
+      "theme": {
+        "Mode": "Dark"
+      },
+      "width": 1440,
+      "height": 900,
+      "fill": "$--background",
+      "children": [
+        {
+          "type": "frame",
+          "id": "sWtNc",
+          "name": "Main Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Lhuka",
+              "name": "Top Section",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 32,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SFjfh",
+                  "name": "logo",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "raUqJ",
+                      "name": "logoIc",
+                      "width": 36,
+                      "height": 36,
+                      "iconFontName": "account_balance_wallet",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--primary"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zfhHU",
+                      "name": "logoTxt",
+                      "fill": "$--foreground",
+                      "content": "FinGo",
+                      "fontFamily": "Geist",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ETuQL",
+                  "name": "formCard",
+                  "width": 420,
+                  "fill": "$--card",
+                  "cornerRadius": "$--radius-m",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$--border"
+                  },
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "uSqe3",
+                      "name": "formTtl",
+                      "fill": "$--foreground",
+                      "content": "Вход в аккаунт",
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8JnwU",
+                      "name": "formSub",
+                      "fill": "$--muted-foreground",
+                      "content": "Введите email и пароль для входа",
+                      "textAlign": "center",
+                      "fontFamily": "Geist",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "2APHG",
+                      "name": "emailGrp",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YrsTk",
+                          "name": "emailLbl",
+                          "fill": "$--foreground",
+                          "content": "Email",
+                          "fontFamily": "Geist",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Gw7Zm",
+                          "name": "emailInp",
+                          "width": "fill_container",
+                          "cornerRadius": "$--radius-pill",
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--input"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "XduZJ",
+                              "name": "emailPh",
+                              "fill": "$--muted-foreground",
+                              "content": "alexey@mail.ru",
+                              "fontFamily": "Geist",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Xt9LA",
+                      "name": "passGrp",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 6,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "6loaA",
+                          "name": "passLbl",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LqrQG",
+                              "name": "passLt",
+                              "fill": "$--foreground",
+                              "content": "Пароль",
+                              "fontFamily": "Geist",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nPqWF",
+                              "name": "passLnk",
+                              "fill": "$--primary",
+                              "content": "Забыли пароль?",
+                              "fontFamily": "Geist",
+                              "fontSize": 13,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "g8vBU",
+                          "name": "passInp",
+                          "width": "fill_container",
+                          "cornerRadius": "$--radius-pill",
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--input"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "0yTG7",
+                              "name": "passPh",
+                              "fill": "$--muted-foreground",
+                              "content": "••••••••",
+                              "fontFamily": "Geist",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon_font",
+                              "id": "5JFhh",
+                              "name": "passEye",
+                              "width": 20,
+                              "height": 20,
+                              "iconFontName": "visibility_off",
+                              "iconFontFamily": "Material Symbols Sharp",
+                              "weight": 100,
+                              "fill": "$--muted-foreground"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P2KfD",
+                      "name": "loginBtn",
+                      "width": "fill_container",
+                      "fill": "$--primary",
+                      "cornerRadius": "$--radius-pill",
+                      "padding": [
+                        14,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3QTvr",
+                          "name": "loginTxt",
+                          "fill": "$--primary-foreground",
+                          "content": "Войти",
+                          "fontFamily": "Geist",
+                          "fontSize": 16,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "8rnJ6",
+                      "name": "regRow",
+                      "width": "fill_container",
+                      "gap": 6,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fLjEy",
+                          "name": "regTxt",
+                          "fill": "$--muted-foreground",
+                          "content": "Нет аккаунта?",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "0Z4uo",
+                          "name": "regLnk",
+                          "fill": "$--primary",
+                          "content": "Зарегистрироваться",
+                          "fontFamily": "Geist",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JYTdX",
+              "x": 0,
+              "y": 836,
+              "name": "Bottom Section",
+              "enabled": false,
+              "width": "fill_container(1440)",
+              "height": "fit_content(64)",
+              "gap": 24
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ZWjl7",
+      "x": 14191,
+      "y": -1023,
+      "name": "Регистрация",
+      "width": "fill_container(1440)",
+      "height": "fill_container(900)",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Prrtk",
+          "x": 0,
+          "y": 836,
+          "name": "Bottom Section",
+          "enabled": false,
+          "width": "fill_container(1440)",
+          "height": "fit_content(64)",
+          "gap": 24
+        },
+        {
+          "type": "frame",
+          "id": "9s7ht",
+          "name": "Top Section",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ZSH1H",
+              "name": "Регистрация",
+              "theme": {
+                "Mode": "Dark"
+              },
+              "width": 1440,
+              "height": 900,
+              "fill": "$--background",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SkR7V",
+                  "name": "Main Content",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "3Lcne",
+                      "name": "Top Section",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 32,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "q5PTW",
+                          "name": "logo",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "mOq6E",
+                              "name": "logoIc",
+                              "width": 36,
+                              "height": 36,
+                              "iconFontName": "account_balance_wallet",
+                              "iconFontFamily": "Material Symbols Sharp",
+                              "weight": 100,
+                              "fill": "$--primary"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BnIBJ",
+                              "name": "logoTxt",
+                              "fill": "$--foreground",
+                              "content": "FinGo",
+                              "fontFamily": "Geist",
+                              "fontSize": 32,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "whMeZ",
+                          "name": "formCard",
+                          "width": 420,
+                          "height": 535,
+                          "fill": "$--card",
+                          "cornerRadius": "$--radius-m",
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--border"
+                          },
+                          "layout": "vertical",
+                          "gap": 24,
+                          "padding": 32,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PSeO6",
+                              "name": "formTtl",
+                              "fill": "$--foreground",
+                              "content": "Регистрация",
+                              "textAlign": "center",
+                              "fontFamily": "Geist",
+                              "fontSize": 22,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "aVRmk",
+                              "name": "formSub",
+                              "fill": "$--muted-foreground",
+                              "content": "Введите email и ваше имя",
+                              "textAlign": "center",
+                              "fontFamily": "Geist",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kjInj",
+                              "name": "emailGrp",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "4218i",
+                                  "name": "emailLbl",
+                                  "fill": "$--foreground",
+                                  "content": "Email",
+                                  "fontFamily": "Geist",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ZzFnQ",
+                                  "name": "emailInp",
+                                  "width": "fill_container",
+                                  "cornerRadius": "$--radius-pill",
+                                  "stroke": {
+                                    "align": "inside",
+                                    "thickness": 1,
+                                    "fill": "$--input"
+                                  },
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "lJU0j",
+                                      "name": "emailPh",
+                                      "fill": "$--muted-foreground",
+                                      "content": "ivan@mail.ru",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "c0dk9",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "hPmnU",
+                                  "name": "Имя",
+                                  "fill": "$--foreground",
+                                  "content": "Имя",
+                                  "fontFamily": "Geist",
+                                  "fontSize": 13,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "8f8vQ",
+                                  "name": "Иван",
+                                  "width": "fill_container",
+                                  "cornerRadius": "$--radius-pill",
+                                  "stroke": {
+                                    "align": "inside",
+                                    "thickness": 1,
+                                    "fill": "$--input"
+                                  },
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "hsFH9",
+                                      "name": "emailPh",
+                                      "fill": "$--muted-foreground",
+                                      "content": "Иван",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "3VYGO",
+                              "name": "passGrp",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "pCOyp",
+                                  "name": "passLbl",
+                                  "width": "fill_container",
+                                  "justifyContent": "space_between",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "FB4VC",
+                                      "name": "passLt",
+                                      "fill": "$--foreground",
+                                      "content": "Пароль",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "MxFLn",
+                                      "name": "Придумайте пароль",
+                                      "fill": "$--primary",
+                                      "textGrowth": "fixed-width-height",
+                                      "width": 209,
+                                      "height": 16,
+                                      "content": "Придумайте пароль",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "4Ge6H",
+                                  "name": "passInp",
+                                  "width": "fill_container",
+                                  "cornerRadius": "$--radius-pill",
+                                  "stroke": {
+                                    "align": "inside",
+                                    "thickness": 1,
+                                    "fill": "$--input"
+                                  },
+                                  "padding": [
+                                    12,
+                                    16
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "AMi1M",
+                                      "name": "passPh",
+                                      "fill": "$--muted-foreground",
+                                      "content": "••••••••",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon_font",
+                                      "id": "9ldMI",
+                                      "name": "passEye",
+                                      "width": 20,
+                                      "height": 20,
+                                      "iconFontName": "visibility_off",
+                                      "iconFontFamily": "Material Symbols Sharp",
+                                      "weight": 100,
+                                      "fill": "$--muted-foreground"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "5eSIl",
+                                  "fill": "#CCCCCC",
+                                  "width": 17,
+                                  "height": 1
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "3khhk",
+                              "name": "regBtn",
+                              "width": "fill_container",
+                              "fill": "$--primary",
+                              "cornerRadius": "$--radius-pill",
+                              "padding": [
+                                14,
+                                0
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "RqxTm",
+                                  "name": "loginTxt",
+                                  "fill": "$--primary-foreground",
+                                  "content": "Войти",
+                                  "fontFamily": "Geist",
+                                  "fontSize": 16,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mYEHr",
+                      "x": 0,
+                      "y": 836,
+                      "name": "Bottom Section",
+                      "enabled": false,
+                      "width": "fill_container(1440)",
+                      "height": "fit_content(64)",
+                      "gap": 24
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "GKMNh",
+      "x": 3433,
+      "y": -71,
+      "name": "Добавить категорию",
+      "theme": {
+        "Mode": "Dark"
+      },
+      "width": 1440,
+      "fill": "$--background",
+      "children": [
+        {
+          "type": "frame",
+          "id": "0lkfj",
+          "name": "sidebar",
+          "width": 280,
+          "height": "fill_container",
+          "fill": "$--sidebar",
+          "stroke": {
+            "align": "outside",
+            "thickness": {
+              "right": 1
+            },
+            "fill": "$--sidebar-border"
+          },
+          "layout": "vertical",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "W89bV",
+              "name": "Sidebar Header",
+              "width": "fill_container",
+              "height": 88,
+              "stroke": {
+                "align": "inside",
+                "thickness": {
+                  "bottom": 1
+                },
+                "fill": "$--sidebar-border"
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                24,
+                32
+              ],
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BYX44",
+                  "name": "Sidebar Logo",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "path",
+                      "id": "VlmKz",
+                      "name": "Subtract",
+                      "geometry": "M16 0c8.83656 0 16 7.16344 16 16 0 8.83656-7.16344 16-16 16-8.83656 0-16-7.16344-16-16 0-8.83656 7.16344-16 16-16z m1.86035 8.71777c-0.66585-1.68829-3.05485-1.68829-3.7207 0l-1.21485 3.08008c-0.20329 0.51544-0.61151 0.92366-1.12695 1.12695l-3.08008 1.21485c-1.68829 0.66585-1.68829 3.05485 0 3.7207l3.08008 1.21485c0.51544 0.20329 0.92366 0.61151 1.12695 1.12695l1.21485 3.08008c0.66585 1.68829 3.05485 1.68829 3.7207 0l1.21485-3.08008c0.20329-0.51544 0.61151-0.92366 1.12695-1.12695l3.08008-1.21485c1.68829-0.66585 1.68829-3.05485 0-3.7207l-3.08008-1.21485c-0.51544-0.20329-0.92366-0.61151-1.12695-1.12695l-1.21485-3.08008z",
+                      "fill": "$--destructive",
+                      "width": 32,
+                      "height": 32
+                    },
+                    {
+                      "type": "text",
+                      "id": "Y5qph",
+                      "name": "FinGo",
+                      "fill": "$--primary",
+                      "content": "FinGo",
+                      "lineHeight": 1,
+                      "fontFamily": "$--font-primary",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "6MiXo",
+              "name": "Sidebar Content",
+              "width": "fill_container",
+              "height": "fill_container",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1
+              },
+              "layout": "vertical",
+              "padding": [
+                0,
+                16
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gf7G9",
+                  "name": "nav1",
+                  "width": 248,
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "5mmpM",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "dashboard",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "3igoP",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Главная",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "xkzNO",
+                  "name": "nav2",
+                  "width": 248,
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "Yubf3",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "account_balance_wallet",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UhCpk",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Счета",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A2LFg",
+                  "name": "nav3",
+                  "width": 248,
+                  "fill": "$--sidebar-accent",
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "Tkwdp",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "swap_horiz",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-accent-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KYUlO",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-accent-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Транзакции",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hug76",
+                  "name": "nav4",
+                  "width": 248,
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "7WkcL",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "pie_chart",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zBOse",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Бюджеты",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "K0nSa",
+                  "name": "nav5",
+                  "width": 248,
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "izAFt",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "bar_chart",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nAPFc",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Аналитика",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "i01PK",
+                  "name": "nav6",
+                  "width": 248,
+                  "cornerRadius": 100,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "gap": 16,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "gQ3nf",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "settings",
+                      "iconFontFamily": "Material Symbols Sharp",
+                      "weight": 100,
+                      "fill": "$--sidebar-foreground"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rgiyw",
+                      "name": "Item Title",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Настройки",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kYvFv",
+              "x": 0,
+              "y": 995,
+              "name": "Sidebar Footer",
+              "enabled": false,
+              "width": "fill_container(280)",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1
+              },
+              "gap": 8,
+              "padding": [
+                24,
+                32
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DVAJG",
+                  "name": "Profile",
+                  "width": "fill_container",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1
+                  },
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "S3knV",
+                      "name": "Name",
+                      "fill": "$--sidebar-accent-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Joe Doe",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Vgo3s",
+                      "name": "Email",
+                      "fill": "$--sidebar-foreground",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "joe@acmecorp.com",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$--font-secondary",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon_font",
+                  "id": "st6zx",
+                  "width": 24,
+                  "height": 24,
+                  "iconFontName": "keyboard_arrow_down",
+                  "iconFontFamily": "Material Symbols Sharp",
+                  "weight": 100,
+                  "fill": "$--sidebar-foreground"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "7Kfrr",
+          "name": "Main Content",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            32,
+            40
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "YfSim",
+              "name": "Top Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Sv4kB",
+                  "name": "header",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "wlamV",
+                      "name": "ttlW",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fAmQo",
+                          "name": "ttl",
+                          "fill": "$--foreground",
+                          "content": "Новая категория",
+                          "fontFamily": "$--font-secondary",
+                          "fontSize": 28,
+                          "fontWeight": "bold"
+                        },
+                        {
+                          "type": "text",
+                          "id": "7GDmZ",
+                          "name": "sub",
+                          "fill": "$--muted-foreground",
+                          "content": "Заполните данные категории",
+                          "fontFamily": "$--font-secondary",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lNObc",
+              "name": "Bottom Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OV7qK",
+                  "name": "formCard",
+                  "width": 560,
+                  "fill": "$--card",
+                  "cornerRadius": "$--radius-m",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$--border"
+                  },
+                  "layout": "vertical",
+                  "gap": 24,
+                  "padding": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RIflR",
+                      "name": "typeToggle",
+                      "width": 121,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "qfn0r",
+                          "name": "togLbl",
+                          "fill": "$--muted-foreground",
+                          "content": "Тип категории",
+                          "fontFamily": "$--font-secondary",
+                          "fontSize": 13,
+                          "fontWeight": "medium"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yRAdX",
+                          "name": "togRow",
+                          "width": "fill_container",
+                          "fill": "$--secondary",
+                          "cornerRadius": "$--radius-pill",
+                          "padding": 4,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Yv5I6",
+                              "name": "togExp",
+                              "width": "fill_container",
+                              "fill": "$--primary",
+                              "cornerRadius": "$--radius-pill",
+                              "padding": [
+                                8,
+                                0
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "aW0vh",
+                                  "name": "togExpT",
+                                  "fill": "$--primary-foreground",
+                                  "textGrowth": "fixed-width-height",
+                                  "width": 49,
+                                  "height": 19,
+                                  "content": "Расход",
+                                  "fontFamily": "$--font-secondary",
+                                  "fontSize": 14,
+                                  "fontWeight": "medium"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "2vHVm",
+                              "name": "togInc",
+                              "width": "fill_container",
+                              "cornerRadius": "$--radius-pill",
+                              "padding": [
+                                8,
+                                0
+                              ],
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "cP2Hm",
+                                  "name": "togIncT",
+                                  "fill": "$--muted-foreground",
+                                  "content": "Доход",
+                                  "fontFamily": "$--font-secondary",
+                                  "fontSize": 14,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "G0vWp",
+                      "name": "catField",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "oTeQM",
+                          "name": "catL",
+                          "fill": "$--muted-foreground",
+                          "content": "Наименование категории",
+                          "fontFamily": "$--font-secondary",
+                          "fontSize": 13,
+                          "fontWeight": "medium"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "4PJhh",
+                          "name": "catI",
+                          "width": "fill_container",
+                          "fill": "$--secondary",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--border"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ptgv2",
+                              "name": "catT",
+                              "fill": "$--muted-foreground",
+                              "content": "Что это за категория?",
+                              "fontFamily": "$--font-secondary",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fJL9s",
+                      "name": "accField",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GrNDv",
+                          "name": "accL",
+                          "fill": "$--muted-foreground",
+                          "content": "Основная категория",
+                          "fontFamily": "$--font-secondary",
+                          "fontSize": 13,
+                          "fontWeight": "medium"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "WVvGh",
+                          "name": "accI",
+                          "width": "fill_container",
+                          "fill": "$--secondary",
+                          "cornerRadius": 8,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "$--border"
+                          },
+                          "padding": [
+                            12,
+                            16
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "0KQWP",
+                              "name": "accT",
+                              "fill": "$--foreground",
+                              "content": "Есть ли основная категория?",
+                              "fontFamily": "$--font-secondary",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon_font",
+                              "id": "UvAZW",
+                              "name": "accIc",
+                              "width": 20,
+                              "height": 20,
+                              "iconFontName": "keyboard_arrow_down",
+                              "iconFontFamily": "Material Symbols Sharp",
+                              "weight": 100,
+                              "fill": "$--muted-foreground"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "4UCWx",
+                      "name": "buttons",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IQBwg",
+                          "name": "cancelBtn",
+                          "fill": "$--secondary",
+                          "cornerRadius": "$--radius-pill",
+                          "padding": [
+                            12,
+                            24
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "JXTtw",
+                              "name": "cancelT",
+                              "fill": "$--foreground",
+                              "content": "Отмена",
+                              "fontFamily": "$--font-secondary",
+                              "fontSize": 14,
+                              "fontWeight": "medium"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iCDgK",
+                          "name": "saveBtn",
+                          "fill": "$--primary",
+                          "cornerRadius": "$--radius-pill",
+                          "gap": 8,
+                          "padding": [
+                            12,
+                            24
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "NVKCF",
+                              "name": "saveIc",
+                              "width": 18,
+                              "height": 18,
+                              "iconFontName": "check",
+                              "iconFontFamily": "Material Symbols Sharp",
+                              "weight": 100,
+                              "fill": "$--primary-foreground"
+                            },
+                            {
+                              "type": "text",
+                              "id": "4V0yJ",
+                              "name": "saveT",
+                              "fill": "$--primary-foreground",
+                              "content": "Сохранить",
+                              "fontFamily": "$--font-secondary",
+                              "fontSize": 14,
+                              "fontWeight": "medium"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "PbuOJ",
+      "x": 4867.804153197931,
+      "y": 588.6492356808103,
+      "fill": "#000000",
+      "content": "Зарплата",
+      "fontFamily": "Inter",
+      "fontSize": 12,
+      "fontWeight": "normal"
     }
   ],
   "themes": {

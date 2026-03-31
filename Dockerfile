@@ -1,5 +1,5 @@
-ARG GO_VERSION=1.26.1
-ARG ALPINE_VERSION=3.21
+ARG GO_VERSION=1.25.8
+ARG ALPINE_VERSION=3.22
 ARG VERSION=dev
 ARG PORT=8008
 ARG PATH_TO_MAIN_FILE=cmd/*.go
@@ -17,8 +17,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -mod=vendor -a installsuffix cgo -o app \
-    -ldflags "-X 'main.version=${VERSION}'" ${PATH_TO_MAIN_FILE}
+RUN go build -a -installsuffix cgo -o app -ldflags "-X 'main.version=${VERSION}'" ${PATH_TO_MAIN_FILE}
 
 FROM alpine:${ALPINE_VERSION}
 ARG PORT
@@ -31,6 +30,8 @@ RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 
 COPY --from=build --chown=appuser:appgroup /app/app /app/
+
+RUN mkdir -p /app/uploads/icons && chown -R appuser:appgroup /app/uploads
 
 USER appuser
 

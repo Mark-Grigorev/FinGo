@@ -6,19 +6,15 @@ import (
 )
 
 // SetupLogger возвращает slog.Logger под нужный env.
-func SetupLogger(env string) *slog.Logger {
+func SetupLogger(debug bool) *slog.Logger {
 	var handler slog.Handler
 
-	switch env {
-	case "prod":
+	switch debug {
+	case false:
 		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			Level: slog.LevelInfo,
 		})
-	case "dev":
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		})
-	default: // local
+	default:
 		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		})

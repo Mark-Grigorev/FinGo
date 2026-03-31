@@ -25,7 +25,7 @@ FinGo — self-hosted веб-приложение для управления л
 
 | Слой           | Технология                              |
 |----------------|-----------------------------------------|
-| Язык           | Go 1.26                                 |
+| Язык           | Go 1.25                                 |
 | HTTP Router    | [Gin](https://github.com/gin-gonic/gin) |
 | База данных    | PostgreSQL 17                           |
 | SQL            | [sqlc](https://sqlc.dev) + pgx          |
@@ -66,7 +66,7 @@ docker compose up --build
 
 Приложение будет доступно по адресу `http://localhost`.
 
-**Локальная разработка** (требуется [Go 1.26+](https://go.dev/)):
+**Локальная разработка** (требуется [Go 1.25+](https://go.dev/)):
 
 ```bash
 make run       # запустить приложение
@@ -85,6 +85,21 @@ make build     # собрать бинарник
 | `DB_USER`           | `fingo`        | Пользователь БД          |
 | `DB_PASSWORD`       | —              | Пароль БД                |
 | `DB_NAME`           | `fingo`        | Имя базы данных          |
+
+### Коды завершения
+
+При аварийном завершении процесс возвращает уникальный код — это позволяет определить причину сбоя без просмотра кода.
+
+| Код | Константа          | Причина                                                       |
+|-----|--------------------|---------------------------------------------------------------|
+| `0` | `exitOK`           | Успешное завершение (штатный shutdown по сигналу)             |
+| `2` | `exitConfigError`  | Ошибка загрузки конфигурации (например, не задан `DB_CONN_STRING`) |
+| `3` | `exitTokenError`   | Ошибка инициализации PASETO-токенера (неверный `TOKEN_SYMMETRIC_KEY`) |
+| `4` | `exitDBConnect`    | Не удалось подключиться к базе данных (недоступен PostgreSQL) |
+| `5` | `exitDBMigrate`    | Ошибка выполнения миграций БД                                 |
+| `6` | `exitServerShutdown` | Graceful shutdown не завершился в отведённое время          |
+
+> Код `1` зарезервирован системой (panic в `main`). Приложение его не использует.
 
 ### Лицензия
 
@@ -113,7 +128,7 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 
 | Layer          | Technology                              |
 |----------------|-----------------------------------------|
-| Language       | Go 1.26                                 |
+| Language       | Go 1.25                                 |
 | HTTP Router    | [Gin](https://github.com/gin-gonic/gin) |
 | Database       | PostgreSQL 17                           |
 | SQL            | [sqlc](https://sqlc.dev) + pgx          |
@@ -154,7 +169,7 @@ docker compose up --build
 
 App will be available at `http://localhost`.
 
-**Local development** (requires [Go 1.26+](https://go.dev/)):
+**Local development** (requires [Go 1.25+](https://go.dev/)):
 
 ```bash
 make run       # run the app
@@ -173,6 +188,21 @@ make build     # build binary
 | `DB_USER`           | `fingo`        | Database user            |
 | `DB_PASSWORD`       | —              | Database password        |
 | `DB_NAME`           | `fingo`        | Database name            |
+
+### Exit Codes
+
+Each failure scenario returns a unique exit code so you can identify the root cause without reading the source.
+
+| Code | Constant           | Reason                                                        |
+|------|--------------------|---------------------------------------------------------------|
+| `0`  | `exitOK`           | Clean exit (graceful shutdown on signal)                      |
+| `2`  | `exitConfigError`  | Configuration load failed (e.g. `DB_CONN_STRING` not set)     |
+| `3`  | `exitTokenError`   | PASETO token maker init failed (invalid `TOKEN_SYMMETRIC_KEY`) |
+| `4`  | `exitDBConnect`    | Could not connect to the database (PostgreSQL unreachable)    |
+| `5`  | `exitDBMigrate`    | Database migration failed                                     |
+| `6`  | `exitServerShutdown` | Graceful shutdown did not complete in time                  |
+
+> Code `1` is reserved by the Go runtime (unrecovered panic). The application never returns it explicitly.
 
 ### License
 

@@ -52,7 +52,7 @@
       </form>
 
       <p class="auth-footer">
-        Нет аккаунта? <a href="#">Зарегистрироваться</a>
+        Нет аккаунта? <a href="/register">Зарегистрироваться</a>
       </p>
     </div>
   </div>
@@ -60,7 +60,7 @@
   <script>
     // Если уже авторизован — сразу на дашборд
     fetch('/api/auth/me', { credentials: 'include' })
-      .then(r => { if (r.ok) window.location.replace('/dashboard.html'); })
+      .then(r => { if (r.ok) window.location.replace('/dashboard'); })
       .catch(() => {});
 
     function togglePwd() {
@@ -96,7 +96,7 @@
         });
 
         if (res.ok) {
-          window.location.replace('/dashboard.html');
+          window.location.replace('/dashboard');
           return;
         }
 
@@ -105,7 +105,7 @@
         errBox.style.display = 'block';
       } catch {
         // Бэкенд недоступен — dev-режим, пускаем напрямую
-        window.location.replace('/dashboard.html');
+        window.location.replace('/dashboard');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Войти';

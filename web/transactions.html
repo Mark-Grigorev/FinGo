@@ -8,9 +8,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
-  <script src="js/auth.js"></script>
-  <script src="js/api.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
     .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 6px; height: 44px; margin-bottom: 4px; animation: pulse 1.5s ease-in-out infinite; }
@@ -18,19 +18,22 @@
     .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
   </style>
 </head>
-<body x-cloak>
-<div class="app-layout" x-data="transactionsPage()">
+<body>
+<div class="app-layout" x-data="transactionsPage()" x-cloak>
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
       <span>FinGo</span>
     </div>
-    <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
-    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
-    <a href="transactions.html" class="nav-item active"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
-    <a href="categories.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
-    <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <a href="/dashboard" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="/accounts" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="/transactions" class="nav-item active"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Категории</span></a>
+    <a href="/budgets" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Бюджеты</span></a>
+    <a href="/recurring" class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg><span>Регулярные</span></a>
+    <a href="/reports" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
     <div class="sidebar-spacer"></div>
+    <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Настройки</span></a>
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
 
@@ -40,7 +43,7 @@
         <h1>Транзакции</h1>
         <p>История всех операций</p>
       </div>
-      <a href="new-transaction.html" class="btn btn-primary">
+      <a href="/new-transaction" class="btn btn-primary">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Добавить
       </a>
@@ -57,7 +60,7 @@
       </div>
       <div class="filter-chip" :class="filters.category_id ? 'active' : ''"
            @click="filters.category_id = ''; load()">
-        <span x-text="filters.category_id ? 'Категория: ' + filters.category_id : 'Все категории'"></span>
+        <span x-text="filters.category_id ? 'Категория: ' + categoryName(filters.category_id) : 'Все категории'"></span>
       </div>
       <div class="filter-chip" :class="filters.account_id ? 'active' : ''"
            @click="filters.account_id = ''; load()">
@@ -72,10 +75,10 @@
             <th>Дата</th>
             <th>Название</th>
             <th>Категория</th>
-            <th>Описание</th>
             <th>Счёт</th>
             <th>Сумма</th>
             <th>Тип</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -97,16 +100,20 @@
                 <td style="color:var(--muted-fg);font-family:var(--font-mono);font-size:12px" x-text="fmt.date(tx.date)"></td>
                 <td x-text="tx.name"></td>
                 <td>
-                  <span style="display:flex;align-items:center;gap:6px">
-                    <span class="cat-dot" :style="'background:' + (tx.category_color || '#888')"></span>
+                  <span style="display:flex;align-items:center;gap:6px;cursor:pointer" @click="tx.category_id && (filters.category_id = String(tx.category_id), page = 1, load())">
+                    <span class="cat-dot" :style="'background:' + (tx.category_color || '#888888')"></span>
                     <span x-text="tx.category_name || '—'"></span>
                   </span>
                 </td>
-                <td style="color:var(--muted-fg)" x-text="tx.description || '—'"></td>
                 <td style="color:var(--muted-fg)" x-text="tx.account_name || '—'"></td>
                 <td :class="typeClass(tx.type)"
                     x-text="amountPrefix(tx.type) + fmt.money(tx.amount)"></td>
                 <td><span class="tag" :class="tagClass(tx.type)" x-text="tagLabel(tx.type)"></span></td>
+                <td>
+                  <button style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted-fg);opacity:0.6" @click="deleteTx(tx.id)" title="Удалить">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </td>
               </tr>
             </template>
           </template>
@@ -151,12 +158,21 @@
       loading: true,
       error: null,
       transactions: [],
+      categories: [],
       total: 0,
       page: 1,
       perPage: 10,
       filters: { from: '', to: '', category_id: '', account_id: '' },
       get totalPages() { return Math.ceil(this.total / this.perPage) || 1; },
-      async init() { await this.load(); },
+      categoryName(id) {
+        const c = this.categories.find(c => String(c.id) === String(id));
+        return c ? c.name : id;
+      },
+      async init() {
+        const res = await api.get('/categories').catch(() => ({ items: [] }));
+        this.categories = res.items ?? res;
+        await this.load();
+      },
       async load() {
         this.loading = true;
         try {
@@ -203,24 +219,16 @@
       tagClass(type) { return type === 'income' ? 'tag-income' : 'tag-expense'; },
       tagLabel(type) { return type === 'income' ? 'Доход' : 'Расход'; },
       amountPrefix(type) { return type === 'income' ? '+' : '-'; },
+      async deleteTx(id) {
+        if (!confirm('Удалить транзакцию? Баланс счёта будет восстановлен.')) return;
+        try {
+          await api.delete('/transactions/' + id);
+          await this.load();
+        } catch(e) { alert('Ошибка удаления: ' + e.message); }
+      },
     };
   }
 
-  const fmt = {
-    money(v) {
-      if (v == null) return '₽ 0';
-      return '₽ ' + Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    },
-    date(v) {
-      if (!v) return '—';
-      return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-    },
-    pct(v) {
-      if (v == null) return '0%';
-      const arrow = v >= 0 ? '▲' : '▼';
-      return arrow + ' ' + Math.abs(v).toFixed(1) + '%';
-    },
-  };
 </script>
 </body>
 </html>

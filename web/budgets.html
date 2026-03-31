@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" x-cloak>
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,71 +13,79 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
+    .skeleton { animation: pulse 1.5s ease-in-out infinite; }
+    .skeleton-card { background: var(--surface-2, #2a2a2a); border-radius: 8px; }
+    .skeleton-row  { background: var(--surface-2, #2a2a2a); border-radius: 6px; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+    .error-state { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
-<div class="app-layout">
+<div class="app-layout" x-data="budgetsPage()" x-cloak>
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
       <span>FinGo</span>
     </div>
-    <a href="dashboard.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
-    <a href="accounts.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
-    <a href="transactions.html" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
-    <a href="categories.html" class="nav-item active"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
-    <a href="reports.html" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
+    <a href="/dashboard"    class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
+    <a href="/accounts"     class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
+    <a href="/transactions" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="/categories"   class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Категории</span></a>
+    <a href="/budgets"      class="nav-item active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Бюджеты</span></a>
+    <a href="/recurring"    class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg><span>Регулярные</span></a>
+    <a href="/reports"      class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
     <div class="sidebar-spacer"></div>
+    <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Настройки</span></a>
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
 
-  <main class="main-content" x-data="budgetsPage()">
+  <main class="main-content">
     <div class="page-header">
       <div class="page-title">
         <h1>Бюджеты</h1>
+        <p>Лимиты расходов по категориям</p>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <div class="filter-chip">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           <input type="month" x-model="month" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none" />
         </div>
-        <a href="#" class="btn btn-primary">
+        <button class="btn btn-primary" @click="openCreate()">
           <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Добавить бюджет
-        </a>
+        </button>
       </div>
     </div>
 
     <!-- Error state -->
     <div x-show="error" class="error-state" x-text="error"></div>
 
-    <!-- Skeleton — summary cards -->
+    <!-- Skeleton — summary -->
     <div class="stats-grid" style="margin-bottom:24px" x-show="loading">
       <div class="skeleton skeleton-card" style="height:72px"></div>
       <div class="skeleton skeleton-card" style="height:72px"></div>
       <div class="skeleton skeleton-card" style="height:72px"></div>
     </div>
 
-    <!-- Summary cards -->
+    <!-- Summary -->
     <div class="stats-grid" style="margin-bottom:24px" x-show="!loading && !error">
       <div class="stat-card">
         <div class="stat-label">Общий план</div>
-        <div class="stat-value" x-text="fmt.money(summary.total_plan)"></div>
+        <div class="stat-value" x-text="fmt.money(totalPlan)"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Потрачено</div>
-        <div class="stat-value" x-text="fmt.money(summary.total_spent)"></div>
+        <div class="stat-value" x-text="fmt.money(totalSpent)"></div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Остаток</div>
-        <div class="stat-value" x-text="fmt.money(summary.total_remaining)"></div>
+        <div class="stat-value" :style="totalRemaining < 0 ? 'color:var(--destructive)' : ''" x-text="fmt.money(totalRemaining)"></div>
       </div>
     </div>
 
     <!-- Skeleton — table -->
     <div class="table-container" x-show="loading">
       <div class="skeleton skeleton-row" style="height:44px;margin-bottom:2px"></div>
-      <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
       <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
       <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
       <div class="skeleton skeleton-row" style="height:52px;margin-bottom:2px"></div>
@@ -93,6 +101,7 @@
             <th>Лимит</th>
             <th style="min-width:160px">Прогресс</th>
             <th>%</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -100,7 +109,7 @@
             <tr>
               <td>
                 <span style="display:flex;align-items:center;gap:8px">
-                  <span class="cat-dot" :style="'background:' + b.color"></span>
+                  <span class="cat-dot" :style="'background:' + (b.color || '#888888')"></span>
                   <span x-text="b.name"></span>
                   <span x-show="b.pct > 100" style="font-size:11px;background:#3d1a1a;color:var(--destructive);padding:2px 8px;border-radius:4px;font-weight:600">Превышен</span>
                 </span>
@@ -109,38 +118,143 @@
               <td style="font-family:var(--font-mono);color:var(--muted-fg)" x-text="fmt.money(b.limit)"></td>
               <td>
                 <div class="progress-bar-wrap">
-                  <div class="progress-bar" :class="progressClass(b.pct)" :style="'width:' + progressWidth(b.pct)"></div>
+                  <div class="progress-bar" :class="progressClass(b.pct)" :style="'width:' + Math.min(b.pct, 100) + '%'"></div>
                 </div>
               </td>
-              <td style="font-family:var(--font-mono)" :style="'color:' + pctColor(b.pct)" x-text="b.pct + '%'"></td>
+              <td style="font-family:var(--font-mono)" :style="'color:' + pctColor(b.pct)" x-text="b.pct.toFixed(0) + '%'"></td>
+              <td>
+                <button style="background:none;border:none;cursor:pointer;padding:4px;color:var(--muted-fg);opacity:0.6" @click="deleteBudget(b.id)" title="Удалить">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+              </td>
             </tr>
           </template>
         </tbody>
       </table>
+
+      <!-- Empty state -->
+      <div x-show="!loading && budgets.length === 0" style="text-align:center;color:var(--muted-fg);padding:48px 0;font-size:14px">
+        Бюджеты на этот месяц не настроены
+        <br/><br/>
+        <button class="btn btn-primary" @click="openCreate()">Добавить первый бюджет</button>
+      </div>
     </div>
   </main>
+
+  <!-- Модалка создания бюджета -->
+  <div x-show="showModal" style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)" @keydown.escape.window="showModal=false">
+    <div style="background:var(--surface-1,#1e1e1e);border-radius:12px;padding:28px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)" @click.stop>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <h2 style="font-size:16px;font-weight:600;margin:0">Новый бюджет</h2>
+        <button @click="showModal=false" style="background:none;border:none;cursor:pointer;color:var(--muted-fg)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form @submit.prevent="createBudget()">
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:12px;color:var(--muted-fg);margin-bottom:6px">Категория *</label>
+          <select x-model="form.category_id" required
+            style="width:100%;padding:10px 12px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;box-sizing:border-box">
+            <option value="">— выберите категорию —</option>
+            <template x-for="c in expenseCategories" :key="c.id">
+              <option :value="c.id" x-text="c.icon + ' ' + c.name"></option>
+            </template>
+          </select>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:12px;color:var(--muted-fg);margin-bottom:6px">Лимит *</label>
+          <input x-model.number="form.limit" type="number" min="1" step="any" placeholder="Например: 15000" required
+            style="width:100%;padding:10px 12px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;box-sizing:border-box" />
+        </div>
+
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:12px;color:var(--muted-fg);margin-bottom:6px">Месяц</label>
+          <input x-model="form.month" type="month"
+            style="width:100%;padding:10px 12px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;box-sizing:border-box" />
+        </div>
+
+        <div x-show="formError" x-text="formError" style="color:#e74c3c;font-size:13px;margin-bottom:12px"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" @click="showModal=false" class="btn" style="background:var(--surface-2,#2a2a2a)">Отмена</button>
+          <button type="submit" class="btn btn-primary" :disabled="formLoading" x-text="formLoading ? 'Создание...' : 'Создать'"></button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
   function budgetsPage() {
     return {
       loading: true, error: null,
-      month: new Date().toISOString().slice(0,7),
-      summary: { total_plan:0, total_spent:0, total_remaining:0 },
+      month: new Date().toISOString().slice(0, 7),
       budgets: [],
-      async init() { await this.load(); },
+      categories: [],
+      showModal: false,
+      formLoading: false,
+      formError: null,
+      form: { category_id: '', limit: '', month: '' },
+
+      get expenseCategories() {
+        return this.categories.filter(c => c.type === 'expense');
+      },
+      get totalPlan()      { return this.budgets.reduce((s, b) => s + b.limit, 0); },
+      get totalSpent()     { return this.budgets.reduce((s, b) => s + b.spent, 0); },
+      get totalRemaining() { return this.totalPlan - this.totalSpent; },
+
+      async init() {
+        await Promise.all([this.loadCategories(), this.load()]);
+      },
+      async loadCategories() {
+        try {
+          const res = await api.get('/categories');
+          this.categories = res.items ?? res;
+        } catch(_) {}
+      },
       async load() {
         this.loading = true;
+        this.error = null;
         try {
           const res = await api.get('/budgets?month=' + this.month);
-          this.summary = res.summary ?? res;
-          this.budgets = res.items ?? res.budgets ?? [];
+          this.budgets = res.items ?? [];
         } catch(e) { this.error = e.message; }
         finally { this.loading = false; }
       },
+      openCreate() {
+        this.form = { category_id: '', limit: '', month: this.month };
+        this.formError = null;
+        this.showModal = true;
+      },
+      async createBudget() {
+        if (!this.form.category_id) { this.formError = 'Выберите категорию'; return; }
+        this.formError = null;
+        this.formLoading = true;
+        try {
+          await api.post('/budgets', {
+            category_id: Number(this.form.category_id),
+            limit: this.form.limit,
+            month: this.form.month,
+          });
+          this.showModal = false;
+          await this.load();
+        } catch(e) {
+          this.formError = e.message || 'Ошибка при создании';
+        } finally {
+          this.formLoading = false;
+        }
+      },
+      async deleteBudget(id) {
+        if (!confirm('Удалить бюджет?')) return;
+        try {
+          await api.delete('/budgets/' + id);
+          this.budgets = this.budgets.filter(b => b.id !== id);
+        } catch(e) { alert('Ошибка: ' + e.message); }
+      },
       progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },
-      progressWidth(pct) { return Math.min(pct, 100) + '%'; },
-      pctColor(pct) { return pct > 100 ? 'var(--destructive)' : pct > 85 ? 'var(--primary)' : '#4ade80'; }
+      pctColor(pct)       { return pct > 100 ? 'var(--destructive)' : pct > 85 ? 'var(--primary)' : '#4ade80'; },
     };
   }
 </script>
