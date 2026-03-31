@@ -19,6 +19,20 @@ type uploadHandler struct {
 	log       *slog.Logger
 }
 
+// uploadIcon godoc
+// @Summary Upload category icon
+// @Description Upload an image file for category icon (max 2MB)
+// @Tags upload
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param icon formData file true "Icon image file (jpg, jpeg, png, webp, gif)"
+// @Success 200 {object} map[string]interface{} "Icon uploaded successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request: file missing, wrong format, or file too large"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 413 {object} map[string]interface{} "File too large (max 2MB)"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /categories/icons [post]
 func (h *uploadHandler) uploadIcon(c *gin.Context) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 2<<20) // 2 MB
 

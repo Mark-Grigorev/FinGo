@@ -16,6 +16,17 @@ type budgetHandler struct {
 	log *slog.Logger
 }
 
+// list godoc
+// @Summary List budgets
+// @Description Get all budgets for a specific month
+// @Tags budgets
+// @Produce json
+// @Security BearerAuth
+// @Param month query string false "Month (YYYY-MM)" example:"2024-01"
+// @Success 200 {object} map[string]interface{} "Budgets retrieved successfully"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /budgets [get]
 func (h *budgetHandler) list(c *gin.Context) {
 	userID := currentUserID(c)
 	monthStr := c.Query("month")
@@ -33,6 +44,22 @@ func (h *budgetHandler) list(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"items": list})
 }
 
+// create godoc
+// @Summary Create budget
+// @Description Create a new budget limit for a category
+// @Tags budgets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body interface{} true "Budget data"
+// @Success 201 {object} map[string]interface{} "Budget created successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request format"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Access denied (category belongs to another user)"
+// @Failure 404 {object} map[string]interface{} "Category not found"
+// @Failure 409 {object} map[string]interface{} "Budget already exists for this category and month"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /budgets [post]
 func (h *budgetHandler) create(c *gin.Context) {
 	userID := currentUserID(c)
 	var in struct {
@@ -58,6 +85,22 @@ func (h *budgetHandler) create(c *gin.Context) {
 	c.JSON(http.StatusCreated, b)
 }
 
+// update godoc
+// @Summary Update budget
+// @Description Update budget limit by ID
+// @Tags budgets
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Budget ID"
+// @Param request body interface{} true "Budget update data"
+// @Success 200 {object} map[string]interface{} "Budget updated successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid request format or ID"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Access denied (budget belongs to another user)"
+// @Failure 404 {object} map[string]interface{} "Budget not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /budgets/{id} [put]
 func (h *budgetHandler) update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -79,6 +122,20 @@ func (h *budgetHandler) update(c *gin.Context) {
 	c.JSON(http.StatusOK, b)
 }
 
+// delete godoc
+// @Summary Delete budget
+// @Description Delete budget by ID
+// @Tags budgets
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Budget ID"
+// @Success 204 "Budget deleted successfully"
+// @Failure 400 {object} map[string]interface{} "Invalid ID"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 403 {object} map[string]interface{} "Access denied (budget belongs to another user)"
+// @Failure 404 {object} map[string]interface{} "Budget not found"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /budgets/{id} [delete]
 func (h *budgetHandler) delete(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
