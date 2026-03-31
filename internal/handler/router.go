@@ -11,10 +11,22 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/Mark-Grigorev/FinGo/internal/service"
 )
 
+// @title FinGo API
+// @version 1.0
+// @description Personal Finance Management API
+// @termsOfService http://swagger.io/terms/
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api
 type Router struct {
 	router *gin.Engine
 	port   int
@@ -55,6 +67,9 @@ func NewRouter(
 	uploadH := &uploadHandler{uploadDir: routerCfg.UploadDir, log: log}
 	budgetH := &budgetHandler{svc: budgets, log: log}
 	recurringH := &recurringHandler{svc: recurring, log: log}
+
+	// Swagger endpoint
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Serve uploaded files
 	r.Static("/api/uploads", routerCfg.UploadDir)
