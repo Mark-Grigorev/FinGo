@@ -1,6 +1,6 @@
 module github.com/Mark-Grigorev/FinGo
 
-go 1.25.1
+go 1.25.8
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
