@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/Mark-Grigorev/FinGo/internal/domain"
 	"github.com/Mark-Grigorev/FinGo/internal/repository"
 	"github.com/Mark-Grigorev/FinGo/internal/service"
 )
@@ -37,6 +39,20 @@ func (h *transactionHandler) list(c *gin.Context) {
 	})
 }
 
+func (h *transactionHandler) delete(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "неверный id"})
+		return
+	}
+	userID := currentUserID(c)
+	if err := h.svc.Delete(c.Request.Context(), id, userID); err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func (h *transactionHandler) create(c *gin.Context) {
 	userID := currentUserID(c)
 	var in service.CreateTransactionInput
@@ -46,6 +62,21 @@ func (h *transactionHandler) create(c *gin.Context) {
 	}
 	tx, err := h.svc.Create(c.Request.Context(), userID, in)
 	if err != nil {
+		var insuf *domain.InsufficientFundsError
+		if errors.As(err, &insuf) {
+			alts := insuf.Alternatives
+			if alts == nil {
+				alts = []domain.Account{}
+			}
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"code":         "insufficient_funds",
+				"message":      "недостаточно средств на счёте «" + insuf.AccountName + "»",
+				"balance":      insuf.Balance,
+				"amount":       insuf.Amount,
+				"alternatives": alts,
+			})
+			return
+		}
 		writeError(c, h.log, err)
 		return
 	}

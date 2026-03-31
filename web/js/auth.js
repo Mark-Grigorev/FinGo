@@ -9,7 +9,7 @@
     });
 
     if (res.status === 401 || res.status === 403) {
-      window.location.replace('/index.html');
+      window.location.replace('/');
       return;
     }
 
@@ -28,5 +28,5 @@ async function logout() {
   try {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
   } catch { /* игнорируем */ }
-  window.location.replace('/index.html');
+  window.location.replace('/');
 }

@@ -8,15 +8,59 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
   <link rel="stylesheet" href="css/style.css" />
-    <script src="js/auth.js"></script>
-    <script src="js/api.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
+    .skeleton { background: var(--surface-2, #2a2a2a); border-radius: 8px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .skeleton-card { height: 72px; margin-bottom: 12px; }
+    .skeleton-row  { height: 72px; margin-bottom: 2px; }
+    .recurring-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; background: var(--surface-1, #1e1e1e);
+      border-radius: 10px; margin-bottom: 8px;
+      border: 1px solid transparent;
+    }
+    .recurring-item.overdue { border-color: var(--destructive, #e74c3c); }
+    .recurring-item.upcoming { border-color: #f59e0b; }
+    .recurring-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--surface-2, #2a2a2a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .recurring-info { flex: 1; min-width: 0; }
+    .recurring-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .recurring-desc { font-size: 12px; color: var(--muted-fg, #888); }
+    .recurring-amount { font-size: 15px; font-weight: 600; color: var(--destructive, #e74c3c); flex-shrink: 0; }
+    .recurring-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; font-weight: 500; margin-left: 6px;
+    }
+    .badge-overdue  { background: rgba(231,76,60,.15); color: #e74c3c; }
+    .badge-upcoming { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.6); }
+    .modal-box { background: var(--surface-1,#1e1e1e); border-radius: 12px; padding: 28px; width: 100%; max-width: 440px; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 16px; font-weight: 600; margin: 0; }
+    .form-field { margin-bottom: 14px; }
+    .form-field label { display: block; font-size: 12px; color: var(--muted-fg,#888); margin-bottom: 6px; }
+    .form-field input, .form-field select {
+      width: 100%; padding: 10px 12px;
+      background: var(--surface-2,#2a2a2a); border: 1px solid var(--border,#333);
+      border-radius: 8px; color: inherit; font-size: 14px; box-sizing: border-box; font-family: inherit;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-error { color: #e74c3c; font-size: 13px; margin-bottom: 12px; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+    .empty-state { text-align: center; padding: 48px 0; color: var(--muted-fg, #888); font-size: 14px; }
   </style>
 </head>
 <body>
-<div class="app-layout">
+<div class="app-layout" x-data="recurringPage()" x-cloak>
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
@@ -24,100 +68,324 @@
     </div>
     <a href="/dashboard" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
     <a href="/accounts" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
-    <a href="/transactions" class="nav-item active"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
-    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="/transactions" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
+    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Категории</span></a>
+    <a href="/budgets" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Бюджеты</span></a>
+    <a href="/recurring" class="nav-item active"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg><span>Регулярные</span></a>
     <a href="/reports" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
     <div class="sidebar-spacer"></div>
-    <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
+    <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Настройки</span></a>
+    <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Выйти</span></a>
   </aside>
 
-  <main class="main-content" x-data="recurringPage()" x-cloak>
+  <main class="main-content">
     <div class="page-header">
       <div class="page-title">
         <h1>Регулярные платежи</h1>
+        <p>Подписки и повторяющиеся расходы</p>
       </div>
-      <a href="#" class="btn btn-primary">
+      <button class="btn btn-primary" @click="openCreate()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Добавить платёж
-      </a>
+        Добавить
+      </button>
     </div>
 
-    <!-- Error state -->
-    <div x-show="error" class="error-state" x-text="error"></div>
-
-    <!-- Skeleton — summary cards -->
+    <!-- Summary cards skeleton -->
     <div class="stats-grid" style="margin-bottom:24px" x-show="loading">
-      <div class="skeleton skeleton-card" style="height:72px"></div>
-      <div class="skeleton skeleton-card" style="height:72px"></div>
-      <div class="skeleton skeleton-card" style="height:72px"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
     </div>
 
     <!-- Summary cards -->
-    <div class="stats-grid" style="margin-bottom:24px" x-show="!loading && !error">
+    <div class="stats-grid" style="margin-bottom:24px" x-show="!loading">
       <div class="stat-card">
-        <div class="stat-label">Всего в месяц</div>
-        <div class="stat-value" x-text="fmt.money(summary.monthly_total)"></div>
+        <div class="stat-label">В месяц</div>
+        <div class="stat-value" x-text="fmt.money(summary.monthly)"></div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Активных</div>
-        <div class="stat-value" x-text="summary.active_count"></div>
+        <div class="stat-label">Активных платежей</div>
+        <div class="stat-value" x-text="payments.length"></div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Следующий списания</div>
-        <div class="stat-value" style="font-size:22px" x-text="summary.next_date ? fmt.date(summary.next_date) : '—'"></div>
+        <div class="stat-label">Ближайшее списание</div>
+        <div class="stat-value" style="font-size:20px" x-text="summary.nextDate || '—'"></div>
       </div>
     </div>
 
-    <!-- Skeleton — list -->
-    <div x-show="loading" style="display:flex;flex-direction:column;gap:0">
-      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
-      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
-      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
-      <div class="skeleton skeleton-row" style="height:72px;margin-bottom:2px"></div>
+    <!-- List skeleton -->
+    <div x-show="loading">
+      <div class="skeleton skeleton-row"></div>
+      <div class="skeleton skeleton-row"></div>
+      <div class="skeleton skeleton-row"></div>
     </div>
 
-    <!-- Recurring list -->
-    <div x-show="!loading && !error" style="display:flex;flex-direction:column;gap:0">
+    <!-- Empty state -->
+    <div class="empty-state" x-show="!loading && payments.length === 0">
+      Нет регулярных платежей. Добавьте первый.
+    </div>
+
+    <!-- List -->
+    <div x-show="!loading">
       <template x-for="p in payments" :key="p.id">
-        <div class="recurring-item" :style="p.status === 'overdue' ? 'border:1px solid var(--destructive)' : ''">
-          <div class="recurring-icon" x-text="p.icon ?? '💳'"></div>
+        <div class="recurring-item" :class="paymentStatus(p)">
+          <div class="recurring-icon" x-text="p.category_name ? p.category_name[0] : '💳'"></div>
           <div class="recurring-info">
-            <div class="recurring-name" x-text="p.name"></div>
-            <div class="recurring-desc" x-text="p.description"></div>
+            <div class="recurring-name">
+              <span x-text="p.name"></span>
+              <span class="badge badge-overdue"  x-show="paymentStatus(p) === 'overdue'">Просрочен</span>
+              <span class="badge badge-upcoming" x-show="paymentStatus(p) === 'upcoming'">Скоро</span>
+            </div>
+            <div class="recurring-desc">
+              <span x-text="freqLabel(p.frequency)"></span>
+              <template x-if="p.category_name">
+                <span> · <span x-text="p.category_name"></span></span>
+              </template>
+              · следующее <span x-text="fmt.date(p.next_payment_date)"></span>
+            </div>
           </div>
-          <div class="recurring-amount amount-neg" x-text="fmt.money(p.amount)"></div>
-          <template x-if="p.status === 'overdue'">
-            <a href="#" class="btn btn-primary" style="font-size:12px;padding:6px 12px">Оплатить сейчас</a>
-          </template>
-          <template x-if="p.status !== 'overdue'">
-            <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px" @click.prevent="cancel(p.id)">Отменить</a>
-          </template>
+          <div class="recurring-amount" x-text="'−' + fmt.money(p.amount)"></div>
+          <div class="recurring-actions">
+            <template x-if="paymentStatus(p) === 'overdue'">
+              <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" @click="payNow(p)" :disabled="payingId === p.id">
+                <span x-text="payingId === p.id ? '...' : 'Оплатить'"></span>
+              </button>
+            </template>
+            <div class="icon-btn" @click="openEdit(p)" title="Редактировать">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <div class="icon-btn" @click="deletePayment(p.id)" title="Удалить">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            </div>
+          </div>
         </div>
       </template>
     </div>
   </main>
+
+  <!-- Create / Edit modal -->
+  <div class="modal-overlay" x-show="showModal" @keydown.escape.window="showModal=false">
+    <div class="modal-box" @click.stop>
+      <div class="modal-header">
+        <h2 x-text="editId ? 'Редактировать платёж' : 'Новый платёж'"></h2>
+        <button @click="showModal=false" style="background:none;border:none;cursor:pointer;color:var(--muted-fg)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form @submit.prevent="savePayment()">
+        <div class="form-field">
+          <label>Название *</label>
+          <input x-model="form.name" type="text" placeholder="Например: Netflix" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Сумма *</label>
+            <input x-model.number="form.amount" type="number" min="0.01" step="0.01" placeholder="0.00" required />
+          </div>
+          <div class="form-field">
+            <label>Периодичность</label>
+            <select x-model="form.frequency">
+              <option value="monthly">Ежемесячно</option>
+              <option value="weekly">Еженедельно</option>
+              <option value="yearly">Ежегодно</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Счёт *</label>
+            <select x-model.number="form.account_id" required>
+              <option value="">— выберите —</option>
+              <template x-for="a in accounts" :key="a.id">
+                <option :value="a.id" x-text="a.name"></option>
+              </template>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Категория</label>
+            <select x-model.number="form.category_id">
+              <option value="">— без категории —</option>
+              <template x-for="c in categories" :key="c.id">
+                <option :value="c.id" x-text="c.name"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Следующая дата списания</label>
+          <input x-model="form.next_payment_date" type="date" />
+        </div>
+
+        <div class="form-error" x-show="formError" x-text="formError"></div>
+        <div class="form-actions">
+          <button type="button" @click="showModal=false" class="btn" style="background:var(--surface-2,#2a2a2a)">Отмена</button>
+          <button type="submit" class="btn btn-primary" :disabled="formLoading" x-text="formLoading ? 'Сохранение...' : (editId ? 'Сохранить' : 'Создать')"></button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
   function recurringPage() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const soon  = new Date(today); soon.setDate(soon.getDate() + 3);
+
     return {
-      loading: true, error: null,
-      summary: { monthly_total:0, active_count:0, next_date:'' },
+      loading: true,
       payments: [],
+      accounts: [],
+      categories: [],
+      showModal: false,
+      editId: null,
+      formLoading: false,
+      formError: '',
+      payingId: null,
+      form: { name:'', amount:0, frequency:'monthly', account_id:'', category_id:'', next_payment_date:'' },
+
+      get summary() {
+        let monthly = 0;
+        let nextTs = Infinity;
+        for (const p of this.payments) {
+          const a = parseFloat(p.amount) || 0;
+          if (p.frequency === 'weekly')  monthly += a * 4;
+          else if (p.frequency === 'yearly') monthly += a / 12;
+          else monthly += a;
+          const d = new Date(p.next_payment_date).getTime();
+          if (d < nextTs) nextTs = d;
+        }
+        const nextDate = nextTs !== Infinity ? fmt.date(new Date(nextTs).toISOString()) : null;
+        return { monthly, nextDate };
+      },
+
+      paymentStatus(p) {
+        const d = new Date(p.next_payment_date); d.setHours(0,0,0,0);
+        if (d < today) return 'overdue';
+        if (d <= soon)  return 'upcoming';
+        return '';
+      },
+
+      freqLabel(f) {
+        return { monthly:'Ежемесячно', weekly:'Еженедельно', yearly:'Ежегодно' }[f] ?? f;
+      },
+
       async init() {
         try {
-          const res = await api.get('/recurring');
-          this.summary = res.summary ?? {};
-          this.payments = res.items ?? res;
-        } catch(e) { this.error = e.message; }
-        finally { this.loading = false; }
+          const [recRes, accRes, catRes] = await Promise.all([
+            api.get('/recurring'),
+            api.get('/accounts'),
+            api.get('/categories'),
+          ]);
+          this.payments   = recRes.items ?? recRes;
+          this.accounts   = accRes.items ?? accRes;
+          this.categories = (catRes.items ?? catRes).filter(c => c.type === 'expense');
+        } catch(e) {
+          console.error(e);
+        } finally {
+          this.loading = false;
+        }
       },
-      async cancel(id) {
-        if (!confirm('Отменить платёж?')) return;
+
+      openCreate() {
+        this.editId = null;
+        this.formError = '';
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        this.form = {
+          name: '', amount: 0, frequency: 'monthly',
+          account_id: this.accounts[0]?.id ?? '',
+          category_id: '',
+          next_payment_date: nextMonth.toISOString().slice(0,10),
+        };
+        this.showModal = true;
+      },
+
+      openEdit(p) {
+        this.editId = p.id;
+        this.formError = '';
+        this.form = {
+          name: p.name,
+          amount: p.amount,
+          frequency: p.frequency,
+          account_id: p.account_id,
+          category_id: p.category_id ?? '',
+          next_payment_date: new Date(p.next_payment_date).toISOString().slice(0,10),
+        };
+        this.showModal = true;
+      },
+
+      async savePayment() {
+        this.formError = '';
+        this.formLoading = true;
+        const body = {
+          name: this.form.name,
+          amount: this.form.amount,
+          frequency: this.form.frequency,
+          account_id: parseInt(this.form.account_id),
+          category_id: this.form.category_id ? parseInt(this.form.category_id) : null,
+          next_payment_date: this.form.next_payment_date,
+        };
+        try {
+          if (this.editId) {
+            const updated = await api.put('/recurring/' + this.editId, body);
+            const idx = this.payments.findIndex(p => p.id === this.editId);
+            if (idx !== -1) this.payments[idx] = updated;
+          } else {
+            const created = await api.post('/recurring', body);
+            this.payments.push(created);
+          }
+          this.showModal = false;
+        } catch(e) {
+          this.formError = e.message || 'Ошибка при сохранении';
+        } finally {
+          this.formLoading = false;
+        }
+      },
+
+      async payNow(p) {
+        if (!confirm(`Создать транзакцию "${p.name}" на ${fmt.money(p.amount)}?`)) return;
+        this.payingId = p.id;
+        try {
+          await api.post('/transactions', {
+            account_id:  p.account_id,
+            category_id: p.category_id ? String(p.category_id) : undefined,
+            type:        'expense',
+            amount:      p.amount,
+            name:        p.name,
+            date:        new Date().toISOString().slice(0,10),
+          });
+          // advance next_payment_date by one period
+          const next = new Date(p.next_payment_date);
+          if (p.frequency === 'weekly')  next.setDate(next.getDate() + 7);
+          else if (p.frequency === 'yearly') next.setFullYear(next.getFullYear() + 1);
+          else next.setMonth(next.getMonth() + 1);
+
+          const updated = await api.put('/recurring/' + p.id, {
+            name:             p.name,
+            amount:           p.amount,
+            frequency:        p.frequency,
+            account_id:       p.account_id,
+            category_id:      p.category_id ?? null,
+            next_payment_date: next.toISOString().slice(0,10),
+          });
+          const idx = this.payments.findIndex(x => x.id === p.id);
+          if (idx !== -1) this.payments[idx] = updated;
+        } catch(e) {
+          alert(e.message || 'Ошибка при оплате');
+        } finally {
+          this.payingId = null;
+        }
+      },
+
+      async deletePayment(id) {
+        if (!confirm('Удалить регулярный платёж?')) return;
         await api.delete('/recurring/' + id);
         this.payments = this.payments.filter(p => p.id !== id);
-        this.summary.active_count--;
-      }
+      },
     };
   }
 </script>

@@ -14,12 +14,12 @@ import (
 )
 
 type AuthService struct {
-	store     *repository.Store
+	store      repository.Storer
 	tokenMaker *token.Maker
-	log       *slog.Logger
+	log        *slog.Logger
 }
 
-func NewAuth(store *repository.Store, maker *token.Maker, log *slog.Logger) *AuthService {
+func NewAuth(store repository.Storer, maker *token.Maker, log *slog.Logger) *AuthService {
 	return &AuthService{store: store, tokenMaker: maker, log: log}
 }
 
@@ -78,4 +78,31 @@ func (s *AuthService) VerifyToken(tokenStr string) (*token.Payload, error) {
 
 func (s *AuthService) GetUser(ctx context.Context, userID int64) (*domain.User, error) {
 	return s.store.GetUserByID(ctx, userID)
+}
+
+func (s *AuthService) UpdateProfile(ctx context.Context, userID int64, name, email string) (*domain.User, error) {
+	name = strings.TrimSpace(name)
+	email = strings.ToLower(strings.TrimSpace(email))
+	if name == "" || email == "" {
+		return nil, domain.ErrInvalidInput
+	}
+	return s.store.UpdateUser(ctx, userID, name, email)
+}
+
+func (s *AuthService) ChangePassword(ctx context.Context, userID int64, oldPwd, newPwd string) error {
+	if len(newPwd) < 6 {
+		return domain.ErrInvalidInput
+	}
+	user, err := s.store.GetUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPwd)); err != nil {
+		return domain.ErrUnauthorized
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPwd), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	return s.store.UpdatePassword(ctx, userID, string(hash))
 }

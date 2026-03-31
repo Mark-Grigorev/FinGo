@@ -4,10 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/Mark-Grigorev/FinGo/internal/config"
@@ -75,39 +72,38 @@ func run() int {
 	}
 	log.Info("migrations applied")
 
+	// Upload directory
+	uploadDir := "/app/uploads/icons"
+	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
+		log.Error("create upload dir", "err", err)
+		return exitConfigError
+	}
+
 	// Services & router
 	authSvc := service.NewAuth(store, maker, log)
 	accountSvc := service.NewAccount(store, log)
 	txSvc := service.NewTransaction(store, log)
+	dashboardSvc := service.NewDashboard(store, log)
+	categorySvc := service.NewCategory(store, log)
+	budgetSvc := service.NewBudget(store, log)
+	recurringSvc := service.NewRecurring(store, log)
 
-	router := handler.NewRouter(log, authSvc, accountSvc, txSvc)
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.App.Port),
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		log.Info("server listening", slog.Int("port", cfg.App.Port))
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Error("server error", "err", err)
-		}
-	}()
-
-	<-quit
-	log.Info("shutting down...")
-
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer shutdownCancel()
-
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Error("graceful shutdown failed", "err", err)
+	err = handler.NewRouter(
+		log,
+		authSvc,
+		accountSvc,
+		txSvc,
+		dashboardSvc,
+		categorySvc,
+		budgetSvc,
+		recurringSvc,
+		handler.RouterCfg{
+			Port:      cfg.App.Port,
+			Debug:     cfg.App.Debug,
+			UploadDir: uploadDir,
+		}).Start()
+	if err != nil {
+		log.Error("server shutdown error", "err", err)
 		return exitServerShutdown
 	}
 

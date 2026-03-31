@@ -10,11 +10,11 @@ import (
 )
 
 type AccountService struct {
-	store *repository.Store
+	store repository.Storer
 	log   *slog.Logger
 }
 
-func NewAccount(store *repository.Store, log *slog.Logger) *AccountService {
+func NewAccount(store repository.Storer, log *slog.Logger) *AccountService {
 	return &AccountService{store: store, log: log}
 }
 

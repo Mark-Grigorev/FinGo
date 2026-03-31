@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css" />
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <style>
     .total-section { margin-bottom: 20px; }
@@ -36,9 +37,12 @@
     <a href="/dashboard" class="nav-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Главная</span></a>
     <a href="/accounts" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>Счета</span></a>
     <a href="/transactions" class="nav-item"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg><span>Транзакции</span></a>
-    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Вводы</span></a>
+    <a href="/categories" class="nav-item"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg><span>Категории</span></a>
+    <a href="/budgets" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span>Бюджеты</span></a>
+    <a href="/recurring" class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg><span>Регулярные</span></a>
     <a href="/reports" class="nav-item"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Аналитика</span></a>
     <div class="sidebar-spacer"></div>
+    <a href="/settings" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Настройки</span></a>
     <a href="#" class="nav-item" onclick="logout();return false;"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Выйти</span></a>
   </aside>
 
@@ -100,7 +104,7 @@
             <span class="stat-badge" :class="badgeClass(summary.expenses_pct)" x-text="fmt.pct(summary.expenses_pct)"></span>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Накопления</div>
+            <div class="stat-label">Остаток с прошлого месяца</div>
             <div class="stat-value" x-text="fmt.money(summary.savings)"></div>
             <span class="stat-badge badge-neutral" x-text="fmt.pct(summary.savings_pct) + ' от дохода'"></span>
           </div>
@@ -109,14 +113,16 @@
         <div class="dashboard-cols">
           <!-- Left column -->
           <div class="dashboard-left">
-            <!-- Chart placeholder (Chart.js integration pending real API data) -->
-            <!-- TODO: integrate Chart.js with /api/dashboard/chart once endpoint is available -->
             <div class="card" style="margin-bottom:20px">
               <div class="section-header">
                 <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
+                <div style="display:flex;gap:12px;font-size:12px;color:var(--muted-fg)">
+                  <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#4ade80;display:inline-block"></span>Доходы</span>
+                  <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#FF8400;display:inline-block"></span>Расходы</span>
+                </div>
               </div>
-              <div class="chart-container" style="display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:13px">
-                График будет доступен после подключения API аналитики
+              <div class="chart-container" style="height:200px">
+                <canvas id="dashBarChart"></canvas>
               </div>
             </div>
 
@@ -151,9 +157,10 @@
             <div class="card" style="margin-bottom:20px">
               <div class="section-header">
                 <span style="font-weight:600;font-size:14px">Бюджеты</span>
+                <a href="/budgets" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
               </div>
               <div style="display:flex;flex-direction:column;gap:12px">
-                <template x-for="b in budgets" :key="b.id">
+                <template x-for="b in budgets.slice(0, 4)" :key="b.id">
                   <div>
                     <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
                       <span :style="b.pct > 100 ? 'color:var(--destructive);font-weight:600' : ''" x-text="b.name + (b.pct > 100 ? ' ⚠' : '')"></span>
@@ -168,29 +175,29 @@
                   </div>
                 </template>
               </div>
-              <a href="/budgets" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--primary)">Все бюджеты →</a>
+              <div x-show="budgets.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                Бюджеты не настроены — <a href="/budgets" style="color:var(--primary)">добавить</a>
+              </div>
             </div>
 
-            <!-- Recurring payments (static) -->
+            <!-- Recurring payments -->
             <div class="card">
               <div class="section-header" style="margin-bottom:8px">
                 <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
                 <a href="/recurring" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
               </div>
-              <div class="tx-row">
-                <div class="tx-icon">🎬</div>
-                <div class="tx-info"><div class="tx-name">Амедиатека</div><div class="tx-cat">Ежемесячно</div></div>
-                <div class="tx-amount amount-neg">-₽ 65,080</div>
-              </div>
-              <div class="tx-row">
-                <div class="tx-icon">🎵</div>
-                <div class="tx-info"><div class="tx-name">World Class</div><div class="tx-cat">Ежемесячно</div></div>
-                <div class="tx-amount amount-neg">-₽ 7,900</div>
-              </div>
-              <div class="tx-row">
-                <div class="tx-icon">🍕</div>
-                <div class="tx-info"><div class="tx-name">Яндекс Плюс</div><div class="tx-cat">Ежемесячно</div></div>
-                <div class="tx-amount amount-neg">-₽ 399</div>
+              <template x-for="r in recurring" :key="r.id">
+                <div class="tx-row">
+                  <div class="tx-icon" x-text="freqIcon(r.frequency)"></div>
+                  <div class="tx-info">
+                    <div class="tx-name" x-text="r.name"></div>
+                    <div class="tx-cat" x-text="freqLabel(r.frequency) + ' · ' + new Date(r.next_payment_date).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'})"></div>
+                  </div>
+                  <div class="tx-amount amount-neg" x-text="'-' + fmt.money(r.amount)"></div>
+                </div>
+              </template>
+              <div x-show="recurring.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                Нет регулярных платежей
               </div>
             </div>
           </div>
@@ -208,18 +215,57 @@
       summary: { balance: 0, income: 0, expenses: 0, savings: 0, balance_pct: 0, income_pct: 0, expenses_pct: 0, savings_pct: 0 },
       transactions: [],
       budgets: [],
+      barData: null,
+      recurring: [],
       async init() {
+        const now = new Date();
+        const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+        const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+        const from = `${y}-${m}-01`, to = `${y}-${m}-${lastDay}`;
         try {
-          const [summary, txRes, budgets] = await Promise.all([
+          const results = await Promise.allSettled([
             api.get('/dashboard/summary'),
             api.get('/transactions?limit=5'),
-            api.get('/budgets?limit=4'),
+            api.get('/budgets'),
+            api.get(`/dashboard/report?from=${from}&to=${to}`),
+            api.get('/recurring'),
           ]);
-          this.summary = summary;
-          this.transactions = txRes.items ?? txRes;
-          this.budgets = budgets.items ?? budgets;
+          const val = (r, def) => r.status === 'fulfilled' ? r.value : def;
+          this.summary  = val(results[0], this.summary);
+          this.transactions = val(results[1], { items: [] }).items ?? [];
+          this.budgets  = val(results[2], { items: [] }).items ?? [];
+          this.barData  = val(results[3], { bar_data: [] }).bar_data ?? [];
+          this.recurring = (val(results[4], { items: [] }).items ?? []).slice(0, 4);
         } catch(e) { this.error = e.message; }
-        finally { this.loading = false; }
+        finally {
+          this.loading = false;
+          await this.$nextTick();
+          this.renderChart();
+        }
+      },
+      renderChart() {
+        const ctx = document.getElementById('dashBarChart')?.getContext('2d');
+        if (!ctx || !window.Chart || !this.barData?.length) return;
+        if (window._dashBarChart) window._dashBarChart.destroy();
+        window._dashBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: this.barData.map(d => d.label),
+            datasets: [
+              { label: 'Доходы',  data: this.barData.map(d => d.income),   backgroundColor: '#4ade80', borderRadius: 5 },
+              { label: 'Расходы', data: this.barData.map(d => d.expenses), backgroundColor: '#FF8400', borderRadius: 5 },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#2E2E2E' }, ticks: { color: '#B8B9B6' } },
+              y: { grid: { color: '#2E2E2E' }, ticks: { color: '#B8B9B6', callback: v => '₽' + (v/1000).toFixed(0) + 'K' } },
+            },
+          },
+        });
       },
       badgeClass(pct) { return pct >= 0 ? 'badge-up' : 'badge-down'; },
       progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },

@@ -25,7 +25,7 @@ FinGo — self-hosted веб-приложение для управления л
 
 | Слой           | Технология                              |
 |----------------|-----------------------------------------|
-| Язык           | Go 1.26                                 |
+| Язык           | Go 1.25                                 |
 | HTTP Router    | [Gin](https://github.com/gin-gonic/gin) |
 | База данных    | PostgreSQL 17                           |
 | SQL            | [sqlc](https://sqlc.dev) + pgx          |
@@ -66,7 +66,7 @@ docker compose up --build
 
 Приложение будет доступно по адресу `http://localhost`.
 
-**Локальная разработка** (требуется [Go 1.26+](https://go.dev/)):
+**Локальная разработка** (требуется [Go 1.25+](https://go.dev/)):
 
 ```bash
 make run       # запустить приложение
@@ -128,7 +128,7 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 
 | Layer          | Technology                              |
 |----------------|-----------------------------------------|
-| Language       | Go 1.26                                 |
+| Language       | Go 1.25                                 |
 | HTTP Router    | [Gin](https://github.com/gin-gonic/gin) |
 | Database       | PostgreSQL 17                           |
 | SQL            | [sqlc](https://sqlc.dev) + pgx          |
@@ -169,7 +169,7 @@ docker compose up --build
 
 App will be available at `http://localhost`.
 
-**Local development** (requires [Go 1.26+](https://go.dev/)):
+**Local development** (requires [Go 1.25+](https://go.dev/)):
 
 ```bash
 make run       # run the app

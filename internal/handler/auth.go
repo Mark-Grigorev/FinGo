@@ -71,6 +71,41 @@ func (h *authHandler) me(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h *authHandler) updateProfile(c *gin.Context) {
+	userID := currentUserID(c)
+	var in struct {
+		Name  string `json:"name"  binding:"required"`
+		Email string `json:"email" binding:"required,email"`
+	}
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "неверный формат запроса"})
+		return
+	}
+	user, err := h.svc.UpdateProfile(c.Request.Context(), userID, in.Name, in.Email)
+	if err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *authHandler) changePassword(c *gin.Context) {
+	userID := currentUserID(c)
+	var in struct {
+		OldPassword string `json:"old_password" binding:"required"`
+		NewPassword string `json:"new_password" binding:"required,min=6"`
+	}
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "новый пароль должен содержать минимум 6 символов"})
+		return
+	}
+	if err := h.svc.ChangePassword(c.Request.Context(), userID, in.OldPassword, in.NewPassword); err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func setTokenCookie(c *gin.Context, tokenStr string, expires time.Time) {
 	maxAge := int(time.Until(expires).Seconds())
 	c.SetCookie("session_token", tokenStr, maxAge, "/", "", false, true)

@@ -11,25 +11,29 @@ import (
 )
 
 type TransactionService struct {
-	store *repository.Store
+	store repository.Storer
 	log   *slog.Logger
 }
 
-func NewTransaction(store *repository.Store, log *slog.Logger) *TransactionService {
+func NewTransaction(store repository.Storer, log *slog.Logger) *TransactionService {
 	return &TransactionService{store: store, log: log}
 }
 
 type CreateTransactionInput struct {
 	AccountID  int64   `json:"account_id"`
-	CategoryID *int64  `json:"category_id,omitempty"`
-	Type       string  `json:"type"` // income | expense
 	Amount     float64 `json:"amount"`
-	Name       string  `json:"name"`
+	CategoryID *int64  `json:"category_id,omitempty"`
 	Date       string  `json:"date"` // YYYY-MM-DD, optional
+	Type       string  `json:"type"` // income | expense
+	Name       string  `json:"name"`
 }
 
 func (s *TransactionService) List(ctx context.Context, userID int64, f repository.TransactionFilter) ([]domain.Transaction, int, error) {
 	return s.store.ListTransactions(ctx, userID, f)
+}
+
+func (s *TransactionService) Delete(ctx context.Context, id, userID int64) error {
+	return s.store.DeleteTransaction(ctx, id, userID)
 }
 
 func (s *TransactionService) Create(ctx context.Context, userID int64, in CreateTransactionInput) (*domain.Transaction, error) {
@@ -41,6 +45,31 @@ func (s *TransactionService) Create(ctx context.Context, userID int64, in Create
 	}
 	if in.AccountID == 0 {
 		return nil, domain.ErrInvalidInput
+	}
+	if in.CategoryID == nil {
+		return nil, domain.ErrInvalidInput
+	}
+
+	if in.Type == "expense" {
+		acc, err := s.store.GetAccount(ctx, in.AccountID, userID)
+		if err != nil {
+			return nil, err
+		}
+		if acc.Type != "credit" && acc.Balance < in.Amount {
+			all, _ := s.store.ListAccounts(ctx, userID)
+			var alts []domain.Account
+			for _, a := range all {
+				if a.ID != in.AccountID && (a.Type == "credit" || a.Balance >= in.Amount) {
+					alts = append(alts, a)
+				}
+			}
+			return nil, &domain.InsufficientFundsError{
+				AccountName:  acc.Name,
+				Balance:      acc.Balance,
+				Amount:       in.Amount,
+				Alternatives: alts,
+			}
+		}
 	}
 
 	date := time.Now()
