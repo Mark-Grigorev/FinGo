@@ -2,16 +2,19 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
-	"github.com/jackc/pgx/v5"
 )
 
 type TransactionFilter struct {
 	Page       int
 	Limit      int
 	CategoryID int64
+	From       time.Time
+	To         time.Time
 }
 
 func (s *Store) ListTransactions(ctx context.Context, userID int64, f TransactionFilter) ([]domain.Transaction, int, error) {
@@ -23,54 +26,54 @@ func (s *Store) ListTransactions(ctx context.Context, userID int64, f Transactio
 	}
 	offset := (f.Page - 1) * f.Limit
 
-	var total int
+	// Build dynamic WHERE clause
+	args := []any{userID}
+	conds := []string{"t.user_id = $1"}
+	n := 2
 	if f.CategoryID > 0 {
-		if err := s.pool.QueryRow(ctx,
-			`SELECT COUNT(*) FROM transactions WHERE user_id = $1 AND category_id = $2`, userID, f.CategoryID,
-		).Scan(&total); err != nil {
-			return nil, 0, err
-		}
-	} else {
-		if err := s.pool.QueryRow(ctx,
-			`SELECT COUNT(*) FROM transactions WHERE user_id = $1`, userID,
-		).Scan(&total); err != nil {
-			return nil, 0, err
-		}
+		conds = append(conds, fmt.Sprintf("t.category_id = $%d", n))
+		args = append(args, f.CategoryID)
+		n++
+	}
+	if !f.From.IsZero() {
+		conds = append(conds, fmt.Sprintf("t.date >= $%d", n))
+		args = append(args, f.From)
+		n++
+	}
+	if !f.To.IsZero() {
+		conds = append(conds, fmt.Sprintf("t.date <= $%d", n))
+		args = append(args, f.To)
+		n++
+	}
+	where := strings.Join(conds, " AND ")
+
+	var total int
+	if err := s.pool.QueryRow(ctx,
+		fmt.Sprintf(`SELECT COUNT(*) FROM transactions t WHERE %s`, where),
+		args...,
+	).Scan(&total); err != nil {
+		return nil, 0, err
 	}
 
-	var rows pgx.Rows
-	var err error
-	if f.CategoryID > 0 {
-		rows, err = s.pool.Query(ctx, `
-			SELECT t.id, t.user_id, t.account_id,
-			       COALESCE(a.name, ''),
-			       t.category_id,
-			       COALESCE(c.name, ''), COALESCE(c.color, ''), COALESCE(c.icon, '💳'),
-			       t.type, t.amount, t.name, t.date, t.created_at
-			FROM transactions t
-			LEFT JOIN categories c ON c.id = t.category_id
-			LEFT JOIN accounts a ON a.id = t.account_id
-			WHERE t.user_id = $1 AND t.category_id = $2
-			ORDER BY t.date DESC, t.created_at DESC
-			LIMIT $3 OFFSET $4`,
-			userID, f.CategoryID, f.Limit, offset,
-		)
-	} else {
-		rows, err = s.pool.Query(ctx, `
-			SELECT t.id, t.user_id, t.account_id,
-			       COALESCE(a.name, ''),
-			       t.category_id,
-			       COALESCE(c.name, ''), COALESCE(c.color, ''), COALESCE(c.icon, '💳'),
-			       t.type, t.amount, t.name, t.date, t.created_at
-			FROM transactions t
-			LEFT JOIN categories c ON c.id = t.category_id
-			LEFT JOIN accounts a ON a.id = t.account_id
-			WHERE t.user_id = $1
-			ORDER BY t.date DESC, t.created_at DESC
-			LIMIT $2 OFFSET $3`,
-			userID, f.Limit, offset,
-		)
-	}
+	// Add pagination params
+	limitArg := n
+	offsetArg := n + 1
+	args = append(args, f.Limit, offset)
+
+	rows, err := s.pool.Query(ctx, fmt.Sprintf(`
+		SELECT t.id, t.user_id, t.account_id,
+		       COALESCE(a.name, ''),
+		       t.category_id,
+		       COALESCE(c.name, ''), COALESCE(c.color, ''), COALESCE(c.icon, '💳'),
+		       t.type, t.amount, t.name, t.date, t.created_at
+		FROM transactions t
+		LEFT JOIN categories c ON c.id = t.category_id
+		LEFT JOIN accounts a ON a.id = t.account_id
+		WHERE %s
+		ORDER BY t.date DESC, t.created_at DESC
+		LIMIT $%d OFFSET $%d`, where, limitArg, offsetArg),
+		args...,
+	)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -89,6 +92,40 @@ func (s *Store) ListTransactions(ctx context.Context, userID int64, f Transactio
 		list = append(list, tx)
 	}
 	return list, total, rows.Err()
+}
+
+func (s *Store) ExportTransactions(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT t.id, t.user_id, t.account_id,
+		       COALESCE(a.name, ''),
+		       t.category_id,
+		       COALESCE(c.name, ''), COALESCE(c.color, ''), COALESCE(c.icon, '💳'),
+		       t.type, t.amount, t.name, t.date, t.created_at
+		FROM transactions t
+		LEFT JOIN categories c ON c.id = t.category_id
+		LEFT JOIN accounts a ON a.id = t.account_id
+		WHERE t.user_id = $1 AND t.date BETWEEN $2 AND $3
+		ORDER BY t.date DESC, t.created_at DESC`,
+		userID, from, to,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	list := make([]domain.Transaction, 0)
+	for rows.Next() {
+		var tx domain.Transaction
+		if err := rows.Scan(
+			&tx.ID, &tx.UserID, &tx.AccountID, &tx.AccountName,
+			&tx.CategoryID, &tx.CategoryName, &tx.CategoryColor, &tx.Icon,
+			&tx.Type, &tx.Amount, &tx.Name, &tx.Date, &tx.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		list = append(list, tx)
+	}
+	return list, rows.Err()
 }
 
 func (s *Store) DeleteTransaction(ctx context.Context, id, userID int64) error {

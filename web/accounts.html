@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js" defer></script>
@@ -16,6 +16,7 @@
     .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 8px; height: 64px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
     .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
+      .modal-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.6); }
   </style>
 </head>
 <body>
@@ -102,7 +103,7 @@
   </main>
 
   <!-- Модалка редактирования счёта -->
-  <div x-show="showEditModal" style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)" @keydown.escape.window="showEditModal=false">
+  <div x-show="showEditModal" class="modal-overlay" @keydown.escape.window="showEditModal=false">
     <div style="background:var(--surface-1,#1e1e1e);border-radius:12px;padding:28px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)" @click.stop>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <h2 style="font-size:16px;font-weight:600;margin:0">Редактировать счёт</h2>
@@ -148,7 +149,7 @@
   </div>
 
   <!-- Модалка создания счёта -->
-  <div x-show="showModal" style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)" @keydown.escape.window="showModal=false">
+  <div x-show="showModal" class="modal-overlay" @keydown.escape.window="showModal=false">
     <div style="background:var(--surface-1,#1e1e1e);border-radius:12px;padding:28px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.5)" @click.stop>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <h2 style="font-size:16px;font-weight:600;margin:0">Новый счёт</h2>

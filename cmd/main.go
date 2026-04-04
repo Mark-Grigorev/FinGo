@@ -87,6 +87,7 @@ func run() int {
 	categorySvc := service.NewCategory(store, log)
 	budgetSvc := service.NewBudget(store, log)
 	recurringSvc := service.NewRecurring(store, log)
+	currencySvc := service.NewCurrency(store, log)
 
 	err = handler.NewRouter(
 		log,
@@ -97,6 +98,7 @@ func run() int {
 		categorySvc,
 		budgetSvc,
 		recurringSvc,
+		currencySvc,
 		handler.RouterCfg{
 			Port:      cfg.App.Port,
 			Debug:     cfg.App.Debug,

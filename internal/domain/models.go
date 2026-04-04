@@ -27,6 +27,7 @@ type User struct {
 	ID           int64     `json:"id"`
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
+	BaseCurrency string    `json:"base_currency"`
 	PasswordHash string    `json:"-"`
 	CreatedAt    time.Time `json:"created_at"`
 }
@@ -97,4 +98,12 @@ type RecurringPayment struct {
 	NextPaymentDate time.Time `json:"next_payment_date"`
 	IsActive        bool      `json:"is_active"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+
+type ExchangeRate struct {
+	ID        int64     `json:"id"`
+	UserID    int64     `json:"user_id"`
+	Currency  string    `json:"currency"`
+	Rate      float64   `json:"rate"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

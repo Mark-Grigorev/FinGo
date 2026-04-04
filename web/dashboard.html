@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -53,7 +53,17 @@
         <h1>Главная</h1>
         <p>Добро пожаловать</p>
       </div>
-      <span class="page-date" x-text="new Date().toLocaleDateString('ru-RU', {month:'long', year:'numeric'})"></span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px">
+        <button @click="setPreset('today')" :class="activePreset==='today' ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Сегодня</button>
+        <button @click="setPreset('week')"  :class="activePreset==='week'  ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Неделя</button>
+        <button @click="setPreset('month')" :class="activePreset==='month' ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Месяц</button>
+        <button @click="setPreset('year')"  :class="activePreset==='year'  ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Год</button>
+        <div class="filter-chip" style="margin-left:4px;flex-shrink:0">
+          <input type="date" x-model="from" @change="activePreset=null;load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+          &nbsp;—&nbsp;
+          <input type="date" x-model="to" @change="activePreset=null;load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+        </div>
+      </div>
     </div>
 
     <!-- Error state -->
@@ -104,7 +114,7 @@
             <span class="stat-badge" :class="badgeClass(summary.expenses_pct)" x-text="fmt.pct(summary.expenses_pct)"></span>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Остаток с прошлого месяца</div>
+            <div class="stat-label">Экономия за период</div>
             <div class="stat-value" x-text="fmt.money(summary.savings)"></div>
             <span class="stat-badge badge-neutral" x-text="fmt.pct(summary.savings_pct) + ' от дохода'"></span>
           </div>
@@ -209,33 +219,80 @@
 
 <script>
   function dashboardPage() {
+    const now = new Date();
+    const y = now.getFullYear(), mo = String(now.getMonth() + 1).padStart(2, '0');
+    const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+
     return {
       loading: true,
       error: null,
+      from: `${y}-${mo}-01`,
+      to: `${y}-${mo}-${String(lastDay).padStart(2, '0')}`,
+      activePreset: 'month',
       summary: { balance: 0, income: 0, expenses: 0, savings: 0, balance_pct: 0, income_pct: 0, expenses_pct: 0, savings_pct: 0 },
       transactions: [],
       budgets: [],
       barData: null,
       recurring: [],
+      get periodLabel() {
+        if (this.activePreset === 'today') return 'Сегодня';
+        if (this.activePreset === 'week') return 'Последние 7 дней';
+        if (this.activePreset === 'month') return 'Текущий месяц';
+        if (this.activePreset === 'year') return 'Текущий год';
+        return `${this.from} — ${this.to}`;
+      },
+      setPreset(name) {
+        const d = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const fmt = dt => `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+        if (name === 'today') {
+          const s = fmt(d);
+          this.from = s; this.to = s;
+        } else if (name === 'week') {
+          const w = new Date(d); w.setDate(d.getDate() - 6);
+          this.from = fmt(w); this.to = fmt(d);
+        } else if (name === 'month') {
+          const first = new Date(d.getFullYear(), d.getMonth(), 1);
+          const last  = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+          this.from = fmt(first); this.to = fmt(last);
+        } else if (name === 'year') {
+          this.from = `${d.getFullYear()}-01-01`;
+          this.to   = `${d.getFullYear()}-12-31`;
+        }
+        this.activePreset = name;
+        this.load();
+      },
       async init() {
-        const now = new Date();
-        const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
-        const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
-        const from = `${y}-${m}-01`, to = `${y}-${m}-${lastDay}`;
+        await this.load();
+      },
+      async load() {
+        this.loading = true;
+        this.error = null;
         try {
           const results = await Promise.allSettled([
             api.get('/dashboard/summary'),
             api.get('/transactions?limit=5'),
-            api.get('/budgets'),
-            api.get(`/dashboard/report?from=${from}&to=${to}`),
+            api.get('/budgets?month=' + this.from.slice(0, 7)),
+            api.get(`/dashboard/report?from=${this.from}&to=${this.to}`),
             api.get('/recurring'),
           ]);
           const val = (r, def) => r.status === 'fulfilled' ? r.value : def;
-          this.summary  = val(results[0], this.summary);
+          const summaryData = val(results[0], {});
+          const report      = val(results[3], {});
+          const comparison  = report.comparison ?? {};
+          this.summary = {
+            balance:      summaryData.balance      ?? 0,
+            income:       comparison.income        ?? 0,
+            expenses:     comparison.expenses      ?? 0,
+            savings:      comparison.savings       ?? 0,
+            income_pct:   comparison.income_pct    ?? 0,
+            expenses_pct: comparison.expenses_pct  ?? 0,
+            savings_pct:  comparison.savings_pct   ?? 0,
+          };
           this.transactions = val(results[1], { items: [] }).items ?? [];
-          this.budgets  = val(results[2], { items: [] }).items ?? [];
-          this.barData  = val(results[3], { bar_data: [] }).bar_data ?? [];
-          this.recurring = (val(results[4], { items: [] }).items ?? []).slice(0, 4);
+          this.budgets      = val(results[2], { items: [] }).items ?? [];
+          this.barData      = report.bar_data ?? [];
+          this.recurring    = (val(results[4], { items: [] }).items ?? []).slice(0, 4);
         } catch(e) { this.error = e.message; }
         finally {
           this.loading = false;
@@ -269,6 +326,8 @@
       },
       badgeClass(pct) { return pct >= 0 ? 'badge-up' : 'badge-down'; },
       progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },
+      freqLabel(f) { return {monthly:'Ежемесячно',weekly:'Еженедельно',yearly:'Ежегодно'}[f]??f; },
+      freqIcon(f) { return {monthly:'📅',weekly:'📆',yearly:'🗓'}[f]??'💳'; },
     };
   }
 
