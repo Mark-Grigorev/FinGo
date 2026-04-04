@@ -701,6 +701,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 .auth-card {
   width: 380px;
+  max-width: calc(100vw - 32px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -816,9 +817,166 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .dashboard-cols { grid-template-columns: 1fr; }
 }
 
+/* ─── TABLET (769–900px) ─────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { width: 180px; }
+  .main-content { margin-left: 180px; padding: 24px; max-width: calc(100vw - 180px); }
+}
+
+/* ─── MOBILE: sidebar → bottom tab bar ──────────── */
 @media (max-width: 768px) {
-  .sidebar { width: 60px; padding: 20px 8px; }
-  .sidebar-logo span, .nav-item span { display: none; }
-  .main-content { margin-left: 60px; padding: 20px; }
-  .stats-grid { grid-template-columns: 1fr; }
+  /* ── Bottom tab bar ── */
+  .sidebar {
+    width: 100%;
+    height: 56px;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    gap: 0;
+    border-right: none;
+    border-top: 1px solid var(--sidebar-border);
+    overflow: visible;
+    z-index: 200;
+    align-items: stretch;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  /* Скрываем logo и spacer */
+  .sidebar-logo,
+  .sidebar-spacer { display: none !important; }
+
+  /* Скрываем: Категории (5-й), Регулярные (7-й), Выйти (11-й) */
+  .sidebar > *:nth-child(5),
+  .sidebar > *:nth-child(7),
+  .sidebar > *:nth-child(11) { display: none !important; }
+
+  /* Каждый пункт — иконка по центру */
+  .nav-item {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    padding: 8px 4px 6px;
+    gap: 0;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0;
+    color: #666;
+    position: relative;
+    transition: color 0.15s;
+  }
+
+  .nav-item:hover { background: transparent; color: var(--muted-fg); }
+
+  /* Оранжевая полоска сверху у активного */
+  .nav-item.active {
+    color: var(--primary);
+    background: transparent;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px;
+    background: var(--primary);
+    border-radius: 0 0 3px 3px;
+  }
+
+  /* Иконки — чуть крупнее */
+  .nav-item svg { width: 22px; height: 22px; }
+
+  /* Подписи скрываем */
+  .nav-item span { display: none !important; }
+
+  /* ── Контент ── */
+  .main-content {
+    margin-left: 0;
+    padding: 16px 16px calc(56px + env(safe-area-inset-bottom) + 20px);
+    max-width: 100vw;
+  }
+
+  /* ── Page header — вертикально ── */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .page-header > div { width: 100%; }
+  .page-title h1 { font-size: 22px; }
+  .page-title p { font-size: 12px; }
+
+  /* Кнопка действия — полная ширина */
+  .page-header .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ── Сетки ── */
+  .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+  .dashboard-cols { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr !important; }
+
+  /* ── Размеры цифр баланса ── */
+  .balance-value { font-size: 26px; }
+  .total-value { font-size: 26px !important; }
+  .stat-value { font-size: 20px; }
+
+  /* ── Карточки — меньше padding ── */
+  .card { padding: 14px 16px; }
+  .stat-card { padding: 14px 16px; }
+  .balance-card { padding: 18px 16px; }
+
+  /* ── Account item — стек на мобиле ── */
+  .account-amount { font-size: 14px; }
+
+  /* ── Auth ── */
+  .auth-card {
+    width: calc(100% - 32px);
+    padding: 24px 20px;
+  }
+
+  /* ── Таблицы — горизонтальный скролл ── */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table { min-width: 480px; }
+
+  /* ── Модалки — bottom sheet ── */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-overlay > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* ── Фильтры ── */
+  .filters-bar { gap: 6px; }
+  .filter-chip { font-size: 12px; padding: 5px 10px; }
+
+  /* ── Reports ── */
+  .reports-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Settings form ── */
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn { width: 100%; justify-content: center; }
+}
+
+/* ─── SMALL PHONES (≤ 375px) ─────────────────────── */
+@media (max-width: 375px) {
+  .main-content { padding: 12px 12px calc(56px + env(safe-area-inset-bottom) + 20px); }
+  .page-title h1 { font-size: 20px; }
 }

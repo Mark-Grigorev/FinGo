@@ -24,6 +24,7 @@ type Storer interface {
 	ListTransactions(ctx context.Context, userID int64, f TransactionFilter) ([]domain.Transaction, int, error)
 	CreateTransaction(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 	DeleteTransaction(ctx context.Context, id, userID int64) error
+	ExportTransactions(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error)
 
 	GetDashboardSummary(ctx context.Context, userID int64) (*DashboardSummary, error)
 	GetReport(ctx context.Context, userID int64, from, to time.Time) (*ReportResult, error)
@@ -42,4 +43,11 @@ type Storer interface {
 	CreateRecurring(ctx context.Context, r *domain.RecurringPayment) (*domain.RecurringPayment, error)
 	UpdateRecurring(ctx context.Context, id, userID int64, name string, amount float64, frequency string, nextDate time.Time, accountID int64, categoryID *int64) (*domain.RecurringPayment, error)
 	DeleteRecurring(ctx context.Context, id, userID int64) error
+
+	GetBaseCurrency(ctx context.Context, userID int64) (string, error)
+	SetBaseCurrency(ctx context.Context, userID int64, currency string) error
+	ListExchangeRates(ctx context.Context, userID int64) ([]domain.ExchangeRate, error)
+	UpsertExchangeRate(ctx context.Context, userID int64, currency string, rate float64) (*domain.ExchangeRate, error)
+	DeleteExchangeRate(ctx context.Context, userID int64, currency string) error
+	GetRatesMap(ctx context.Context, userID int64) (map[string]float64, error)
 }

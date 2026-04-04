@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -48,14 +48,17 @@
       <div class="page-title">
         <h1>Отчёты и аналитика</h1>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="filter-chip active">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px">
+        <button @click="setPreset('month')"   :class="activePreset==='month'   ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Месяц</button>
+        <button @click="setPreset('quarter')" :class="activePreset==='quarter' ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Квартал</button>
+        <button @click="setPreset('year')"    :class="activePreset==='year'    ? 'btn btn-primary' : 'btn btn-ghost'" style="font-size:13px;padding:5px 12px;flex-shrink:0">Год</button>
+        <div class="filter-chip active" style="margin-left:4px;flex-shrink:0">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <input type="date" x-model="from" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+          <input type="date" x-model="from" @change="activePreset=null;load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
           &nbsp;—&nbsp;
-          <input type="date" x-model="to" @change="load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
+          <input type="date" x-model="to" @change="activePreset=null;load()" style="background:transparent;border:none;color:inherit;font:inherit;cursor:pointer;outline:none;width:110px" />
         </div>
-        <div class="filter-chip">Экспорт CSV</div>
+        <div class="filter-chip" @click="exportCSV()" style="cursor:pointer;flex-shrink:0">Экспорт CSV</div>
       </div>
     </div>
 
@@ -158,12 +161,45 @@
 
 <script>
   function reportsPage() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = dt => `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastOfMonth  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
     return {
       loading: true, error: null,
-      from: '2026-01-01', to: '2026-03-31',
+      from: fmt(firstOfMonth), to: fmt(lastOfMonth),
+      activePreset: 'month',
       barData: null, pieData: null,
       comparison: { income:0, income_pct:0, expenses:0, expenses_pct:0, savings:0, savings_pct:0 },
       topCategories: [],
+      setPreset(name) {
+        const d = new Date();
+        const p = n => String(n).padStart(2, '0');
+        const f = dt => `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
+        if (name === 'month') {
+          this.from = f(new Date(d.getFullYear(), d.getMonth(), 1));
+          this.to   = f(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+        } else if (name === 'quarter') {
+          const q = new Date(d); q.setDate(d.getDate() - 89);
+          this.from = f(q); this.to = f(d);
+        } else if (name === 'year') {
+          this.from = `${d.getFullYear()}-01-01`;
+          this.to   = `${d.getFullYear()}-12-31`;
+        }
+        this.activePreset = name;
+        this.load();
+      },
+      exportCSV() {
+        const url = `/api/transactions/export?from=${this.from}&to=${this.to}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      },
       async init() { await this.load(); },
       async load() {
         this.loading = true;

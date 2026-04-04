@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
   <script src="js/auth.js"></script>
   <script src="js/api.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js" defer></script>
@@ -71,6 +71,60 @@
       </form>
     </div>
 
+    <!-- Base currency section -->
+    <div class="settings-section">
+      <h2>Базовая валюта</h2>
+      <p style="font-size:13px;color:var(--muted-fg);margin-bottom:16px">
+        Все суммы в дашборде конвертируются в базовую валюту
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <template x-for="c in supportedCurrencies" :key="c">
+          <button @click="setBase(c)"
+            :class="baseCurrency === c ? 'btn btn-primary' : 'btn btn-ghost'"
+            style="font-size:13px;padding:6px 14px" x-text="c"></button>
+        </template>
+      </div>
+      <div class="success-msg" x-show="baseSuccess" x-text="baseSuccess"></div>
+    </div>
+
+    <!-- Exchange rates section -->
+    <div class="settings-section">
+      <h2>Курсы валют</h2>
+      <p style="font-size:13px;color:var(--muted-fg);margin-bottom:16px">
+        Сколько <span x-text="baseCurrency"></span> за 1 единицу иностранной валюты
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <template x-for="r in rates" :key="r.currency">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="width:48px;font-weight:600;font-size:14px" x-text="r.currency"></span>
+            <input type="number" min="0.000001" step="any" x-model.number="r.rate"
+              @blur="saveRate(r.currency, r.rate)"
+              style="width:140px;padding:8px 10px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;font-family:inherit" />
+            <span style="font-size:12px;color:var(--muted-fg)">= 1 <span x-text="r.currency"></span></span>
+            <button @click="deleteRate(r.currency)" style="background:none;border:none;cursor:pointer;color:var(--muted-fg);padding:4px">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <!-- Add new rate -->
+      <div style="display:flex;gap:8px;align-items:center">
+        <select x-model="newRate.currency"
+          style="padding:8px 10px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;font-family:inherit">
+          <template x-for="c in availableCurrencies" :key="c">
+            <option :value="c" x-text="c"></option>
+          </template>
+        </select>
+        <input type="number" x-model.number="newRate.rate" min="0.000001" step="any" placeholder="Курс"
+          style="width:120px;padding:8px 10px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:8px;color:inherit;font-size:14px;font-family:inherit" />
+        <button @click="addRate()" class="btn btn-primary" style="font-size:13px">Добавить</button>
+      </div>
+      <div class="success-msg" x-show="ratesSuccess" x-text="ratesSuccess"></div>
+      <div class="error-msg-inline" x-show="ratesError" x-text="ratesError"></div>
+    </div>
+
     <!-- Password section -->
     <div class="settings-section">
       <h2>Смена пароля</h2>
@@ -108,6 +162,18 @@
       pwdLoading: false,
       pwdSuccess: '',
       pwdError: '',
+      baseCurrency: 'RUB',
+      rates: [],
+      supportedCurrencies: ['RUB','USD','EUR','CNY','GBP','JPY','CHF','TRY'],
+      newRate: { currency: 'USD', rate: 0 },
+      baseSuccess: '',
+      ratesSuccess: '',
+      ratesError: '',
+
+      get availableCurrencies() {
+        const added = new Set(this.rates.map(r => r.currency));
+        return this.supportedCurrencies.filter(c => c !== this.baseCurrency && !added.has(c));
+      },
 
       async init() {
         try {
@@ -117,6 +183,55 @@
         } catch(e) {
           this.profileError = 'Не удалось загрузить профиль';
         }
+        try {
+          const base = await api.get('/currencies/base');
+          this.baseCurrency = base.base_currency || 'RUB';
+        } catch(e) {}
+        try {
+          const data = await api.get('/currencies/rates');
+          this.rates = data.items || [];
+        } catch(e) {}
+      },
+
+      async setBase(c) {
+        try {
+          await api.put('/currencies/base', { currency: c });
+          this.baseCurrency = c;
+          this.baseSuccess = 'Базовая валюта обновлена';
+          setTimeout(() => { this.baseSuccess = ''; }, 3000);
+        } catch(e) {}
+      },
+
+      async saveRate(currency, rate) {
+        try {
+          await api.put('/currencies/rates/' + currency, { rate });
+          this.ratesSuccess = 'Курс сохранён';
+          setTimeout(() => { this.ratesSuccess = ''; }, 3000);
+        } catch(e) {}
+      },
+
+      async addRate() {
+        this.ratesError = '';
+        if (!this.newRate.currency || this.newRate.rate <= 0) {
+          this.ratesError = 'Укажите валюту и курс больше 0';
+          return;
+        }
+        try {
+          const r = await api.put('/currencies/rates/' + this.newRate.currency, { rate: this.newRate.rate });
+          this.rates.push(r);
+          this.newRate = { currency: 'USD', rate: 0 };
+          this.ratesSuccess = 'Курс добавлен';
+          setTimeout(() => { this.ratesSuccess = ''; }, 3000);
+        } catch(e) {
+          this.ratesError = e.message || 'Ошибка при добавлении курса';
+        }
+      },
+
+      async deleteRate(currency) {
+        try {
+          await api.delete('/currencies/rates/' + currency);
+          this.rates = this.rates.filter(r => r.currency !== currency);
+        } catch(e) {}
       },
 
       async saveProfile() {

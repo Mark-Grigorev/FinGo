@@ -48,6 +48,7 @@ func NewRouter(
 	categories *service.CategoryService,
 	budgets *service.BudgetService,
 	recurring *service.RecurringService,
+	currencies *service.CurrencyService,
 	routerCfg RouterCfg,
 ) *Router {
 	// if routerCfg.Debug {
@@ -67,6 +68,7 @@ func NewRouter(
 	uploadH := &uploadHandler{uploadDir: routerCfg.UploadDir, log: log}
 	budgetH := &budgetHandler{svc: budgets, log: log}
 	recurringH := &recurringHandler{svc: recurring, log: log}
+	currencyH := &currencyHandler{svc: currencies, log: log}
 
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -94,6 +96,7 @@ func NewRouter(
 			protected.PUT("/accounts/:id", accH.update)
 			protected.DELETE("/accounts/:id", accH.delete)
 
+			protected.GET("/transactions/export", txH.export)
 			protected.GET("/transactions", txH.list)
 			protected.POST("/transactions", txH.create)
 			protected.DELETE("/transactions/:id", txH.delete)
@@ -117,6 +120,12 @@ func NewRouter(
 			protected.DELETE("/categories/:id", catH.delete)
 
 			protected.POST("/categories/icons", uploadH.uploadIcon)
+
+			protected.GET("/currencies/rates", currencyH.listRates)
+			protected.PUT("/currencies/rates/:currency", currencyH.upsertRate)
+			protected.DELETE("/currencies/rates/:currency", currencyH.deleteRate)
+			protected.GET("/currencies/base", currencyH.getBaseCurrency)
+			protected.PUT("/currencies/base", currencyH.setBaseCurrency)
 		}
 	}
 

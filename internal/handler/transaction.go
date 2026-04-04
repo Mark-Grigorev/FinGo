@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"encoding/csv"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -41,8 +44,23 @@ func (h *transactionHandler) list(c *gin.Context) {
 
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
+	categoryID, _ := strconv.ParseInt(c.Query("category_id"), 10, 64)
 
-	f := repository.TransactionFilter{Page: page, Limit: limit}
+	f := repository.TransactionFilter{
+		Page:       page,
+		Limit:      limit,
+		CategoryID: categoryID,
+	}
+	if fromStr := c.Query("from"); fromStr != "" {
+		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
+			f.From = t
+		}
+	}
+	if toStr := c.Query("to"); toStr != "" {
+		if t, err := time.Parse("2006-01-02", toStr); err == nil {
+			f.To = time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
+		}
+	}
 
 	list, total, err := h.svc.List(c.Request.Context(), userID, f)
 	if err != nil {
@@ -129,4 +147,66 @@ func (h *transactionHandler) create(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, tx)
+}
+
+func (h *transactionHandler) export(c *gin.Context) {
+	userID := currentUserID(c)
+	now := time.Now()
+
+	to := now
+	from := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	if fromStr := c.Query("from"); fromStr != "" {
+		if parsed, err := time.Parse("2006-01-02", fromStr); err == nil {
+			from = parsed
+		}
+	}
+	if toStr := c.Query("to"); toStr != "" {
+		if parsed, err := time.Parse("2006-01-02", toStr); err == nil {
+			to = parsed
+		}
+	}
+	// Set to to end of day
+	to = time.Date(to.Year(), to.Month(), to.Day(), 23, 59, 59, 0, to.Location())
+
+	list, err := h.svc.Export(c.Request.Context(), userID, from, to)
+	if err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+
+	filename := fmt.Sprintf("transactions_%s_%s.csv", from.Format("2006-01-02"), to.Format("2006-01-02"))
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+
+	var totalIncome, totalExpense float64
+	for _, tx := range list {
+		if tx.Type == "income" {
+			totalIncome += tx.Amount
+		} else {
+			totalExpense += tx.Amount
+		}
+	}
+
+	w := csv.NewWriter(c.Writer)
+	_ = w.Write([]string{"Дата", "Тип", "Название", "Категория", "Счёт", "Сумма"})
+	for _, tx := range list {
+		txType := "Расход"
+		if tx.Type == "income" {
+			txType = "Доход"
+		}
+		_ = w.Write([]string{
+			tx.Date.Format("2006-01-02"),
+			txType,
+			tx.Name,
+			tx.CategoryName,
+			tx.AccountName,
+			fmt.Sprintf("%.2f", tx.Amount),
+		})
+	}
+	_ = w.Write([]string{})
+	_ = w.Write([]string{"", "", "", "", "Итого доходов", fmt.Sprintf("%.2f", totalIncome)})
+	_ = w.Write([]string{"", "", "", "", "Итого расходов", fmt.Sprintf("%.2f", totalExpense)})
+	_ = w.Write([]string{"", "", "", "", "Итого (нетто)", fmt.Sprintf("%.2f", totalIncome-totalExpense)})
+	w.Flush()
 }

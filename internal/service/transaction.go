@@ -32,6 +32,10 @@ func (s *TransactionService) List(ctx context.Context, userID int64, f repositor
 	return s.store.ListTransactions(ctx, userID, f)
 }
 
+func (s *TransactionService) Export(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error) {
+	return s.store.ExportTransactions(ctx, userID, from, to)
+}
+
 func (s *TransactionService) Delete(ctx context.Context, id, userID int64) error {
 	return s.store.DeleteTransaction(ctx, id, userID)
 }

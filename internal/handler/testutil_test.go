@@ -27,6 +27,7 @@ type mockStore struct {
 	listTransactionsFn    func(ctx context.Context, userID int64, f repository.TransactionFilter) ([]domain.Transaction, int, error)
 	createTransactionFn   func(ctx context.Context, t *domain.Transaction) (*domain.Transaction, error)
 	deleteTransactionFn   func(ctx context.Context, id, userID int64) error
+	exportTransactionsFn  func(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error)
 	getDashboardSummaryFn func(ctx context.Context, userID int64) (*repository.DashboardSummary, error)
 	listCategoriesFn      func(ctx context.Context, userID int64) ([]domain.Category, error)
 	createCategoryFn      func(ctx context.Context, c *domain.Category) (*domain.Category, error)
@@ -43,6 +44,12 @@ type mockStore struct {
 	deleteRecurringFn func(ctx context.Context, id, userID int64) error
 	updateUserFn      func(ctx context.Context, id int64, name, email string) (*domain.User, error)
 	updatePasswordFn  func(ctx context.Context, id int64, hash string) error
+	getBaseCurrencyFn    func(ctx context.Context, userID int64) (string, error)
+	setBaseCurrencyFn    func(ctx context.Context, userID int64, currency string) error
+	listExchangeRatesFn  func(ctx context.Context, userID int64) ([]domain.ExchangeRate, error)
+	upsertExchangeRateFn func(ctx context.Context, userID int64, currency string, rate float64) (*domain.ExchangeRate, error)
+	deleteExchangeRateFn func(ctx context.Context, userID int64, currency string) error
+	getRatesMapFn        func(ctx context.Context, userID int64) (map[string]float64, error)
 }
 
 func (m *mockStore) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -108,6 +115,10 @@ func (m *mockStore) CreateTransaction(ctx context.Context, t *domain.Transaction
 func (m *mockStore) DeleteTransaction(ctx context.Context, id, userID int64) error {
 	if m.deleteTransactionFn == nil { panic("mockStore: DeleteTransaction not configured") }
 	return m.deleteTransactionFn(ctx, id, userID)
+}
+func (m *mockStore) ExportTransactions(ctx context.Context, userID int64, from, to time.Time) ([]domain.Transaction, error) {
+	if m.exportTransactionsFn == nil { panic("mockStore: ExportTransactions not configured") }
+	return m.exportTransactionsFn(ctx, userID, from, to)
 }
 
 func (m *mockStore) GetDashboardSummary(ctx context.Context, userID int64) (*repository.DashboardSummary, error) {
@@ -192,6 +203,30 @@ func (m *mockStore) UpdatePassword(ctx context.Context, id int64, hash string) e
 	if m.updatePasswordFn == nil { panic("mockStore: UpdatePassword not configured") }
 	return m.updatePasswordFn(ctx, id, hash)
 }
+func (m *mockStore) GetBaseCurrency(ctx context.Context, userID int64) (string, error) {
+	if m.getBaseCurrencyFn == nil { return "RUB", nil }
+	return m.getBaseCurrencyFn(ctx, userID)
+}
+func (m *mockStore) SetBaseCurrency(ctx context.Context, userID int64, currency string) error {
+	if m.setBaseCurrencyFn == nil { panic("mockStore: SetBaseCurrency not configured") }
+	return m.setBaseCurrencyFn(ctx, userID, currency)
+}
+func (m *mockStore) ListExchangeRates(ctx context.Context, userID int64) ([]domain.ExchangeRate, error) {
+	if m.listExchangeRatesFn == nil { return []domain.ExchangeRate{}, nil }
+	return m.listExchangeRatesFn(ctx, userID)
+}
+func (m *mockStore) UpsertExchangeRate(ctx context.Context, userID int64, currency string, rate float64) (*domain.ExchangeRate, error) {
+	if m.upsertExchangeRateFn == nil { panic("mockStore: UpsertExchangeRate not configured") }
+	return m.upsertExchangeRateFn(ctx, userID, currency, rate)
+}
+func (m *mockStore) DeleteExchangeRate(ctx context.Context, userID int64, currency string) error {
+	if m.deleteExchangeRateFn == nil { panic("mockStore: DeleteExchangeRate not configured") }
+	return m.deleteExchangeRateFn(ctx, userID, currency)
+}
+func (m *mockStore) GetRatesMap(ctx context.Context, userID int64) (map[string]float64, error) {
+	if m.getRatesMapFn == nil { return map[string]float64{}, nil }
+	return m.getRatesMapFn(ctx, userID)
+}
 
 // testEnv wires all handlers with a mock store and a real token maker.
 type testEnv struct {
@@ -213,6 +248,7 @@ func newTestEnv() *testEnv {
 	categorySvc := service.NewCategory(store, log)
 	budgetSvc := service.NewBudget(store, log)
 	recurringSvc := service.NewRecurring(store, log)
+	_ = service.NewCurrency(store, log)
 
 	r := gin.New()
 	authH := &authHandler{svc: authSvc, log: log}
