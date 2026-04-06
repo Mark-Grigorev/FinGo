@@ -203,6 +203,65 @@ func (h *authHandler) changePassword(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// ForgotPasswordRequest represents forgot password request
+type ForgotPasswordRequest struct {
+	Email string `json:"email" example:"user@example.com" binding:"required,email"`
+}
+
+// ResetPasswordRequest represents reset password request
+type ResetPasswordRequest struct {
+	Token       string `json:"token" example:"a1b2c3d4..." binding:"required"`
+	NewPassword string `json:"new_password" example:"newpass123" binding:"required,min=6"`
+}
+
+// forgotPassword godoc
+// @Summary Request password reset
+// @Description Send password reset link to user's email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body ForgotPasswordRequest true "User email"
+// @Success 200 {object} map[string]string "Reset link sent (always returns 200 to prevent email enumeration)"
+// @Failure 400 {object} ErrorResponse "Invalid request format"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /auth/forgot-password [post]
+func (h *authHandler) forgotPassword(c *gin.Context) {
+	var in ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "неверный формат запроса"})
+		return
+	}
+	if err := h.svc.ForgotPassword(c.Request.Context(), in.Email); err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "если аккаунт с таким email существует, письмо отправлено"})
+}
+
+// resetPassword godoc
+// @Summary Reset password using token
+// @Description Reset user password using the token from email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body ResetPasswordRequest true "Reset token and new password"
+// @Success 204 "Password reset successfully"
+// @Failure 400 {object} ErrorResponse "Invalid or expired token, or password too short"
+// @Failure 500 {object} ErrorResponse "Internal server error"
+// @Router /auth/reset-password [post]
+func (h *authHandler) resetPassword(c *gin.Context) {
+	var in ResetPasswordRequest
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "новый пароль должен содержать минимум 6 символов"})
+		return
+	}
+	if err := h.svc.ResetPassword(c.Request.Context(), in.Token, in.NewPassword); err != nil {
+		writeError(c, h.log, err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func setTokenCookie(c *gin.Context, tokenStr string, expires time.Time) {
 	maxAge := int(time.Until(expires).Seconds())
 	c.SetCookie("session_token", tokenStr, maxAge, "/", "", false, true)

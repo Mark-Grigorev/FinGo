@@ -25,10 +25,9 @@ services:
         VERSION: ${VERSION:-dev}
     container_name: fingo_app
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - APP_PORT=8008
-      - APP_DEBUG=true
-      - APP_ENV=local
       - DB_CONN_STRING=postgres://${POSTGRES_USER:-fingo}:${POSTGRES_PASSWORD:-fingo_secret}@postgres:5432/${POSTGRES_DB:-fingo}?sslmode=disable
     depends_on:
       postgres:

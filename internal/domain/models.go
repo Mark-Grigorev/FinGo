@@ -100,6 +100,13 @@ type RecurringPayment struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
+type PasswordReset struct {
+	Token     string
+	UserID    int64
+	ExpiresAt time.Time
+	UsedAt    *time.Time
+}
+
 type ExchangeRate struct {
 	ID        int64     `json:"id"`
 	UserID    int64     `json:"user_id"`

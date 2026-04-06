@@ -73,9 +73,6 @@ func NewRouter(
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Swagger endpoint
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
 	// Serve uploaded files
 	r.Static("/api/uploads", routerCfg.UploadDir)
 
@@ -85,6 +82,8 @@ func NewRouter(
 		api.POST("/auth/login", authH.login)
 		api.POST("/auth/register", authH.register)
 		api.POST("/auth/logout", authH.logout)
+		api.POST("/auth/forgot-password", authH.forgotPassword)
+		api.POST("/auth/reset-password", authH.resetPassword)
 
 		// Защищённые маршруты
 		protected := api.Group("/")

@@ -10,6 +10,9 @@ import (
 // Storer abstracts all database operations used by the service layer.
 type Storer interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	CreatePasswordReset(ctx context.Context, token string, userID int64, expiresAt time.Time) error
+	GetPasswordReset(ctx context.Context, token string) (*domain.PasswordReset, error)
+	MarkPasswordResetUsed(ctx context.Context, token string) error
 	GetUserByID(ctx context.Context, id int64) (*domain.User, error)
 	CreateUser(ctx context.Context, email, name, hash string) (*domain.User, error)
 	UpdateUser(ctx context.Context, id int64, name, email string) (*domain.User, error)
