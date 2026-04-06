@@ -49,7 +49,10 @@ type mockStore struct {
 	listExchangeRatesFn  func(ctx context.Context, userID int64) ([]domain.ExchangeRate, error)
 	upsertExchangeRateFn func(ctx context.Context, userID int64, currency string, rate float64) (*domain.ExchangeRate, error)
 	deleteExchangeRateFn func(ctx context.Context, userID int64, currency string) error
-	getRatesMapFn        func(ctx context.Context, userID int64) (map[string]float64, error)
+	getRatesMapFn              func(ctx context.Context, userID int64) (map[string]float64, error)
+	createPasswordResetFn   func(ctx context.Context, token string, userID int64, expiresAt time.Time) error
+	getPasswordResetFn      func(ctx context.Context, token string) (*domain.PasswordReset, error)
+	markPasswordResetUsedFn func(ctx context.Context, token string) error
 }
 
 func (m *mockStore) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
@@ -227,6 +230,18 @@ func (m *mockStore) GetRatesMap(ctx context.Context, userID int64) (map[string]f
 	if m.getRatesMapFn == nil { return map[string]float64{}, nil }
 	return m.getRatesMapFn(ctx, userID)
 }
+func (m *mockStore) CreatePasswordReset(ctx context.Context, token string, userID int64, expiresAt time.Time) error {
+	if m.createPasswordResetFn == nil { panic("mockStore: CreatePasswordReset not configured") }
+	return m.createPasswordResetFn(ctx, token, userID, expiresAt)
+}
+func (m *mockStore) GetPasswordReset(ctx context.Context, token string) (*domain.PasswordReset, error) {
+	if m.getPasswordResetFn == nil { panic("mockStore: GetPasswordReset not configured") }
+	return m.getPasswordResetFn(ctx, token)
+}
+func (m *mockStore) MarkPasswordResetUsed(ctx context.Context, token string) error {
+	if m.markPasswordResetUsedFn == nil { panic("mockStore: MarkPasswordResetUsed not configured") }
+	return m.markPasswordResetUsedFn(ctx, token)
+}
 
 // testEnv wires all handlers with a mock store and a real token maker.
 type testEnv struct {
@@ -241,7 +256,7 @@ func newTestEnv() *testEnv {
 	maker, _ := token.New("", time.Hour)
 	log := slog.Default()
 
-	authSvc := service.NewAuth(store, maker, log)
+	authSvc := service.NewAuth(store, maker, nil, "", log)
 	accSvc := service.NewAccount(store, log)
 	txSvc := service.NewTransaction(store, log)
 	dashboardSvc := service.NewDashboard(store, log)

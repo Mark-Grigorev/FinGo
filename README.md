@@ -20,6 +20,7 @@ FinGo — self-hosted веб-приложение для управления л
 - **Регулярные платежи** — автоматизация подписок и периодических платежей
 - **Аналитика** — динамика доходов/расходов, топ категорий, сравнение периодов
 - **Экспорт** — CSV, PDF, Excel
+- **Восстановление пароля** — сброс пароля по ссылке на email (через Resend)
 
 ### Стек технологий
 
@@ -33,6 +34,7 @@ FinGo — self-hosted веб-приложение для управления л
 | Конфиги        | [Viper](https://github.com/spf13/viper) |
 | Аутентификация | PASETO токены                           |
 | Хэширование    | bcrypt                                  |
+| Email          | [Resend](https://resend.com)            |
 | Фронтенд       | [Pencil](https://pencil.dev)            |
 | Reverse proxy  | Nginx                                   |
 | Контейнеры     | Docker / Docker Compose                 |
@@ -77,14 +79,15 @@ make build     # собрать бинарник
 
 ### Переменные окружения
 
-| Переменная          | По умолчанию   | Описание                 |
-|---------------------|----------------|--------------------------|
-| `APP_PORT`          | `8008`         | Порт приложения          |
-| `DB_HOST`           | `localhost`    | Хост PostgreSQL          |
-| `DB_PORT`           | `5432`         | Порт PostgreSQL          |
-| `DB_USER`           | `fingo`        | Пользователь БД          |
-| `DB_PASSWORD`       | —              | Пароль БД                |
-| `DB_NAME`           | `fingo`        | Имя базы данных          |
+| Переменная             | По умолчанию            | Описание                              |
+|------------------------|-------------------------|---------------------------------------|
+| `APP_PORT`             | `8008`                  | Порт приложения                       |
+| `APP_ENV`              | `local`                 | Окружение (`local`, `prod`)           |
+| `DB_CONN_STRING`       | —                       | Строка подключения к PostgreSQL       |
+| `TOKEN_SYMMETRIC_KEY`  | —                       | PASETO ключ (64 hex-символа)          |
+| `TOKEN_DURATION`       | `24h`                   | Время жизни токена                    |
+| `RESEND_API_KEY`       | —                       | API ключ [Resend](https://resend.com) |
+| `APP_BASE_URL`         | `http://localhost:8008` | Базовый URL для ссылок в письмах      |
 
 ### Коды завершения
 
@@ -123,6 +126,7 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 - **Recurring payments** — automate subscriptions and regular bills
 - **Analytics** — income/expense dynamics, top spending categories, period-over-period comparison
 - **Export** — CSV, PDF, Excel
+- **Password recovery** — reset password via email link (powered by Resend)
 
 ### Tech Stack
 
@@ -136,6 +140,7 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 | Config         | [Viper](https://github.com/spf13/viper) |
 | Auth           | PASETO tokens                           |
 | Password hash  | bcrypt                                  |
+| Email          | [Resend](https://resend.com)            |
 | Frontend       | [Pencil](https://pencil.dev)            |
 | Reverse proxy  | Nginx                                   |
 | Containerized  | Docker / Docker Compose                 |
@@ -180,14 +185,15 @@ make build     # build binary
 
 ### Environment Variables
 
-| Variable            | Default        | Description              |
-|---------------------|----------------|--------------------------|
-| `APP_PORT`          | `8008`         | Application port         |
-| `DB_HOST`           | `localhost`    | PostgreSQL host          |
-| `DB_PORT`           | `5432`         | PostgreSQL port          |
-| `DB_USER`           | `fingo`        | Database user            |
-| `DB_PASSWORD`       | —              | Database password        |
-| `DB_NAME`           | `fingo`        | Database name            |
+| Variable               | Default                 | Description                               |
+|------------------------|-------------------------|-------------------------------------------|
+| `APP_PORT`             | `8008`                  | Application port                          |
+| `APP_ENV`              | `local`                 | Environment (`local`, `prod`)             |
+| `DB_CONN_STRING`       | —                       | PostgreSQL connection string              |
+| `TOKEN_SYMMETRIC_KEY`  | —                       | PASETO key (64 hex chars)                 |
+| `TOKEN_DURATION`       | `24h`                   | Token TTL                                 |
+| `RESEND_API_KEY`       | —                       | API key from [Resend](https://resend.com) |
+| `APP_BASE_URL`         | `http://localhost:8008` | Base URL used in password reset emails    |
 
 ### Exit Codes
 

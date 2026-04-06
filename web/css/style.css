@@ -851,6 +851,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .sidebar-logo,
   .sidebar-spacer { display: none !important; }
 
+
   /* Скрываем: Категории (5-й), Регулярные (7-й), Выйти (11-й) */
   .sidebar > *:nth-child(5),
   .sidebar > *:nth-child(7),

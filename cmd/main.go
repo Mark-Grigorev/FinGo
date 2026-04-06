@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/Mark-Grigorev/FinGo/internal/config"
+	"github.com/subosito/gotenv"
 	"github.com/Mark-Grigorev/FinGo/internal/handler"
 	"github.com/Mark-Grigorev/FinGo/internal/logger"
 	"github.com/Mark-Grigorev/FinGo/internal/repository"
 	"github.com/Mark-Grigorev/FinGo/internal/service"
+	"github.com/Mark-Grigorev/FinGo/pkg/email"
 	"github.com/Mark-Grigorev/FinGo/pkg/token"
 )
 
@@ -31,6 +33,8 @@ func main() {
 }
 
 func run() int {
+	_ = gotenv.Load() // загружаем .env в os.Environ, если файл есть
+
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "config:", err)
@@ -79,8 +83,11 @@ func run() int {
 		return exitConfigError
 	}
 
+	// Email sender
+	emailSender := email.NewResend(cfg.Email.ResendAPIKey)
+
 	// Services & router
-	authSvc := service.NewAuth(store, maker, log)
+	authSvc := service.NewAuth(store, maker, emailSender, cfg.Email.BaseURL, log)
 	accountSvc := service.NewAccount(store, log)
 	txSvc := service.NewTransaction(store, log)
 	dashboardSvc := service.NewDashboard(store, log)

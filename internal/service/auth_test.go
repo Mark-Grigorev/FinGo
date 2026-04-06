@@ -22,7 +22,7 @@ func newTestMaker(t *testing.T) *token.Maker {
 }
 
 func TestAuthLogin_EmptyEmail(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "", "password")
 	if err != domain.ErrInvalidInput {
 		t.Errorf("expected ErrInvalidInput, got %v", err)
@@ -30,7 +30,7 @@ func TestAuthLogin_EmptyEmail(t *testing.T) {
 }
 
 func TestAuthLogin_EmptyPassword(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "")
 	if err != domain.ErrInvalidInput {
 		t.Errorf("expected ErrInvalidInput, got %v", err)
@@ -43,7 +43,7 @@ func TestAuthLogin_UserNotFound(t *testing.T) {
 			return nil, domain.ErrNotFound
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "notexist@example.com", "password")
 	if err != domain.ErrUnauthorized {
 		t.Errorf("expected ErrUnauthorized, got %v", err)
@@ -57,7 +57,7 @@ func TestAuthLogin_WrongPassword(t *testing.T) {
 			return &domain.User{ID: 1, Email: "user@example.com", PasswordHash: string(hash)}, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "wrong")
 	if err != domain.ErrUnauthorized {
 		t.Errorf("expected ErrUnauthorized, got %v", err)
@@ -72,7 +72,7 @@ func TestAuthLogin_Success(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, tok, payload, err := svc.Login(context.Background(), "USER@example.com", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -89,7 +89,7 @@ func TestAuthLogin_Success(t *testing.T) {
 }
 
 func TestAuthRegister_InvalidInput(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
 	cases := []struct {
 		email, name, password string
 	}{
@@ -111,7 +111,7 @@ func TestAuthRegister_AlreadyExists(t *testing.T) {
 			return nil, domain.ErrAlreadyExists
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
 	if err != domain.ErrAlreadyExists {
 		t.Errorf("expected ErrAlreadyExists, got %v", err)
@@ -125,7 +125,7 @@ func TestAuthRegister_Success(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, tok, payload, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -151,7 +151,7 @@ func TestAuthGetUser(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, err := svc.GetUser(context.Background(), 3)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

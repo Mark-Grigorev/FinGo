@@ -11,6 +11,12 @@ type Config struct {
 	App   AppConfig
 	DB    string
 	Token TokenConfig
+	Email EmailConfig
+}
+
+type EmailConfig struct {
+	ResendAPIKey string
+	BaseURL      string
 }
 
 type AppConfig struct {
@@ -45,10 +51,17 @@ func Load() (*Config, error) {
 			SymmetricKey: v.GetString("TOKEN_SYMMETRIC_KEY"),
 			Duration:     v.GetString("TOKEN_DURATION"),
 		},
+		Email: EmailConfig{
+			ResendAPIKey: v.GetString("RESEND_API_KEY"),
+			BaseURL:      v.GetString("APP_BASE_URL"),
+		},
 	}
 
 	if cfg.DB == "" {
 		return nil, fmt.Errorf("DB_CONN_STRING is required")
+	}
+	if cfg.Email.ResendAPIKey == "" {
+		return nil, fmt.Errorf("RESEND_API_KEY is required")
 	}
 
 	return cfg, nil
