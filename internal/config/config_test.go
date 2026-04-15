@@ -14,6 +14,7 @@ func TestLoadConfigOK(t *testing.T) {
 	tokenDur := "24h"
 	dbConStr := "postgres://fingo:fingo_secret@localhost:5433/fingo?sslmode=disable"
 	tokenSymKey := "ssssWWW"
+	resendAPIKey := "anyKeyL:ol"
 
 	t.Setenv("APP_PORT", "8000")
 	t.Setenv("APP_DEBUG", "true")
@@ -21,6 +22,7 @@ func TestLoadConfigOK(t *testing.T) {
 	t.Setenv("TOKEN_DURATION", tokenDur)
 	t.Setenv("DB_CONN_STRING", dbConStr)
 	t.Setenv("TOKEN_SYMMETRIC_KEY", tokenSymKey)
+	t.Setenv("RESEND_API_KEY", resendAPIKey)
 
 	cfg, err := config.Load()
 	assert.NoError(t, err)
@@ -32,6 +34,7 @@ func TestLoadConfigOK(t *testing.T) {
 	require.Equal(t, cfg.DB, dbConStr)
 	require.Equal(t, cfg.Token.Duration, tokenDur)
 	require.Equal(t, cfg.Token.SymmetricKey, tokenSymKey)
+	require.Equal(t, cfg.Email.ResendAPIKey, resendAPIKey)
 }
 
 func TestLoadConfigErr(t *testing.T) {
