@@ -131,20 +131,26 @@ func (s *Store) GetReport(ctx context.Context, userID int64, from, to time.Time)
 		return nil, err
 	}
 
+	curSavings := max(0, curIncome-curExpenses)
 	result.Comparison = ComparisonData{
 		Income:   curIncome,
 		Expenses: curExpenses,
-		Savings:  max(0, curIncome-curExpenses),
+		Savings:  curSavings,
 	}
+	// income_pct / expenses_pct — изменение относительно предыдущего периода
 	if prevIncome > 0 {
 		result.Comparison.IncomePct = ((curIncome - prevIncome) / prevIncome) * 100
+	} else if curIncome > 0 {
+		result.Comparison.IncomePct = 100 // первый период — рост с нуля
 	}
 	if prevExpenses > 0 {
 		result.Comparison.ExpensesPct = ((curExpenses - prevExpenses) / prevExpenses) * 100
+	} else if curExpenses > 0 {
+		result.Comparison.ExpensesPct = 100 // первый период — рост с нуля
 	}
-	prevSavings := max(0, prevIncome-prevExpenses)
-	if prevSavings > 0 {
-		result.Comparison.SavingsPct = ((result.Comparison.Savings - prevSavings) / prevSavings) * 100
+	// savings_pct — доля сбережений от дохода (соответствует подписи "% от дохода")
+	if curIncome > 0 {
+		result.Comparison.SavingsPct = (curSavings / curIncome) * 100
 	}
 
 	return result, nil

@@ -1,26 +1,5 @@
-basePath: /api
 definitions:
-  github_com_Mark-Grigorev_FinGo_internal_service.CreateAccountInput:
-    properties:
-      balance:
-        type: number
-      currency:
-        type: string
-      name:
-        type: string
-      type:
-        type: string
-    type: object
-  github_com_Mark-Grigorev_FinGo_internal_service.UpdateAccountInput:
-    properties:
-      currency:
-        type: string
-      name:
-        type: string
-      type:
-        type: string
-    type: object
-  internal_handler.ChangePasswordRequest:
+  handler.ChangePasswordRequest:
     properties:
       new_password:
         example: newpass123
@@ -33,13 +12,21 @@ definitions:
     - new_password
     - old_password
     type: object
-  internal_handler.ErrorResponse:
+  handler.ErrorResponse:
     properties:
       message:
         example: invalid credentials
         type: string
     type: object
-  internal_handler.LoginRequest:
+  handler.ForgotPasswordRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+    required:
+    - email
+    type: object
+  handler.LoginRequest:
     properties:
       email:
         example: user@example.com
@@ -51,7 +38,7 @@ definitions:
     - email
     - password
     type: object
-  internal_handler.RegisterRequest:
+  handler.RegisterRequest:
     properties:
       email:
         example: user@example.com
@@ -68,7 +55,20 @@ definitions:
     - name
     - password
     type: object
-  internal_handler.UpdateProfileRequest:
+  handler.ResetPasswordRequest:
+    properties:
+      new_password:
+        example: newpass123
+        minLength: 6
+        type: string
+      token:
+        example: a1b2c3d4...
+        type: string
+    required:
+    - new_password
+    - token
+    type: object
+  handler.UpdateProfileRequest:
     properties:
       email:
         example: user@example.com
@@ -80,7 +80,7 @@ definitions:
     - email
     - name
     type: object
-  internal_handler.UserResponse:
+  handler.UserResponse:
     properties:
       created_at:
         example: "2024-01-01T00:00:00Z"
@@ -98,16 +98,28 @@ definitions:
         example: "2024-01-01T00:00:00Z"
         type: string
     type: object
-host: localhost:8080
+  service.CreateAccountInput:
+    properties:
+      balance:
+        type: number
+      currency:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  service.UpdateAccountInput:
+    properties:
+      currency:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
 info:
   contact: {}
-  description: Personal Finance Management API
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
-  title: FinGo API
-  version: "1.0"
 paths:
   /accounts:
     get:
@@ -145,7 +157,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_Mark-Grigorev_FinGo_internal_service.CreateAccountInput'
+          $ref: '#/definitions/service.CreateAccountInput'
       produces:
       - application/json
       responses:
@@ -241,7 +253,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_Mark-Grigorev_FinGo_internal_service.UpdateAccountInput'
+          $ref: '#/definitions/service.UpdateAccountInput'
       produces:
       - application/json
       responses:
@@ -283,6 +295,38 @@ paths:
       summary: Update account
       tags:
       - accounts
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset link to user's email
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reset link sent (always returns 200 to prevent email enumeration)
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Request password reset
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:
@@ -295,26 +339,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.LoginRequest'
+          $ref: '#/definitions/handler.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: User authenticated successfully
           schema:
-            $ref: '#/definitions/internal_handler.UserResponse'
+            $ref: '#/definitions/handler.UserResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Invalid credentials
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Login user
       tags:
       - auth
@@ -329,7 +373,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Logout user
@@ -344,19 +388,19 @@ paths:
         "200":
           description: User information retrieved successfully
           schema:
-            $ref: '#/definitions/internal_handler.UserResponse'
+            $ref: '#/definitions/handler.UserResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "404":
           description: User not found
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get current user info
@@ -373,27 +417,55 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.RegisterRequest'
+          $ref: '#/definitions/handler.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: User created successfully
           schema:
-            $ref: '#/definitions/internal_handler.UserResponse'
+            $ref: '#/definitions/handler.UserResponse'
         "400":
           description: Invalid request format or validation failed
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "409":
           description: Email already exists
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       summary: Register new user
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using the token from email
+      parameters:
+      - description: Reset token and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Password reset successfully
+        "400":
+          description: Invalid or expired token, or password too short
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Reset password using token
       tags:
       - auth
   /budgets:
@@ -1192,6 +1264,11 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "422":
+          description: Deletion would make account balance negative
+          schema:
+            additionalProperties: true
+            type: object
         "500":
           description: Internal server error
           schema:
@@ -1213,7 +1290,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.ChangePasswordRequest'
+          $ref: '#/definitions/handler.ChangePasswordRequest'
       produces:
       - application/json
       responses:
@@ -1222,15 +1299,15 @@ paths:
         "400":
           description: Invalid request format or password too short
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized or invalid old password
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Change user password
@@ -1247,30 +1324,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_handler.UpdateProfileRequest'
+          $ref: '#/definitions/handler.UpdateProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Profile updated successfully
           schema:
-            $ref: '#/definitions/internal_handler.UserResponse'
+            $ref: '#/definitions/handler.UserResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "409":
           description: Email already exists
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/internal_handler.ErrorResponse'
+            $ref: '#/definitions/handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update user profile
