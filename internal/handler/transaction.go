@@ -45,11 +45,13 @@ func (h *transactionHandler) list(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
 	categoryID, _ := strconv.ParseInt(c.Query("category_id"), 10, 64)
+	accountID, _ := strconv.ParseInt(c.Query("account_id"), 10, 64)
 
 	f := repository.TransactionFilter{
 		Page:       page,
 		Limit:      limit,
 		CategoryID: categoryID,
+		AccountID:  accountID,
 	}
 	if fromStr := c.Query("from"); fromStr != "" {
 		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -87,6 +89,7 @@ func (h *transactionHandler) list(c *gin.Context) {
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 403 {object} map[string]interface{} "Access denied (transaction belongs to another user)"
 // @Failure 404 {object} map[string]interface{} "Transaction not found"
+// @Failure 422 {object} map[string]interface{} "Deletion would make account balance negative"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /transactions/{id} [delete]
 func (h *transactionHandler) delete(c *gin.Context) {
@@ -97,6 +100,16 @@ func (h *transactionHandler) delete(c *gin.Context) {
 	}
 	userID := currentUserID(c)
 	if err := h.svc.Delete(c.Request.Context(), id, userID); err != nil {
+		var insuf *domain.InsufficientFundsError
+		if errors.As(err, &insuf) {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"code":    "insufficient_funds",
+				"message": "удаление невозможно: баланс счёта «" + insuf.AccountName + "» уйдёт в минус",
+				"balance": insuf.Balance,
+				"amount":  insuf.Amount,
+			})
+			return
+		}
 		writeError(c, h.log, err)
 		return
 	}

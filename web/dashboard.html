@@ -210,6 +210,45 @@
             </div>
           </div>
         </div>
+
+        <!-- Расходы по категориям -->
+        <div class="card" style="margin-top:20px">
+          <div class="section-header" style="margin-bottom:16px">
+            <span style="font-weight:600;font-size:14px">Расходы по категориям</span>
+            <span style="font-size:12px;color:var(--muted-fg)" x-text="fmt.money(summary.expenses) + ' всего'"></span>
+          </div>
+
+          <template x-if="pieData.length === 0">
+            <div style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+              Нет расходов за выбранный период
+            </div>
+          </template>
+
+          <template x-if="pieData.length > 0">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <template x-for="cat in pieData" :key="cat.name">
+                <div style="display:grid;grid-template-columns:12px 1fr auto auto;align-items:center;gap:10px">
+                  <!-- цвет категории -->
+                  <span :style="'width:12px;height:12px;border-radius:3px;background:' + cat.color + ';flex-shrink:0;display:inline-block'"></span>
+                  <!-- прогресс-бар + название -->
+                  <div style="min-width:0">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="cat.name"></span>
+                      <span style="color:var(--muted-fg);font-size:12px;margin-left:8px;flex-shrink:0"
+                            x-text="summary.expenses > 0 ? (cat.amount / summary.expenses * 100).toFixed(1) + '%' : '—'"></span>
+                    </div>
+                    <div style="height:4px;border-radius:2px;background:var(--surface-2,#2a2a2a);overflow:hidden">
+                      <div :style="'height:100%;border-radius:2px;background:' + cat.color + ';width:' + (summary.expenses > 0 ? Math.min(cat.amount / summary.expenses * 100, 100) : 0) + '%'"></div>
+                    </div>
+                  </div>
+                  <!-- сумма -->
+                  <span style="font-family:var(--font-mono);font-size:13px;white-space:nowrap" x-text="fmt.money(cat.amount)"></span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
       </div>
     </template>
   </main>
@@ -231,6 +270,7 @@
       transactions: [],
       budgets: [],
       barData: null,
+      pieData: [],
       recurring: [],
       get periodLabel() {
         if (this.activePreset === 'today') return 'Сегодня';
@@ -290,6 +330,7 @@
           this.transactions = val(results[1], { items: [] }).items ?? [];
           this.budgets      = val(results[2], { items: [] }).items ?? [];
           this.barData      = report.bar_data ?? [];
+          this.pieData      = report.pie_data  ?? [];
           this.recurring    = (val(results[4], { items: [] }).items ?? []).slice(0, 4);
         } catch(e) { this.error = e.message; }
         finally {

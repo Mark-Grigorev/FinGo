@@ -54,17 +54,78 @@
 
     <!-- Filters -->
     <div class="filters-bar">
-      <div class="filter-chip" :class="filters.from && filters.to ? 'active' : ''" @click="toggleDateFilter()">
-        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span x-text="filters.from && filters.to ? fmt.date(filters.from) + ' — ' + fmt.date(filters.to) : 'Все даты'"></span>
+      <!-- Date filter with dropdown picker -->
+      <div style="position:relative">
+        <div class="filter-chip" :class="filters.from && filters.to ? 'active' : ''" @click="datePickerOpen = !datePickerOpen">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span x-text="filters.from && filters.to ? fmt.date(filters.from) + ' — ' + fmt.date(filters.to) : 'Все даты'"></span>
+        </div>
+        <div x-show="datePickerOpen" @click.outside="datePickerOpen = false"
+             style="position:absolute;top:calc(100% + 8px);left:0;z-index:100;background:var(--surface-1,#1e1e1e);border:1px solid var(--border,#333);border-radius:10px;padding:14px 16px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+          <!-- Quick presets -->
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            <button class="filter-chip" style="font-size:11px;padding:4px 10px;cursor:pointer" @click="applyPreset('today')">Сегодня</button>
+            <button class="filter-chip" style="font-size:11px;padding:4px 10px;cursor:pointer" @click="applyPreset('week')">Эта неделя</button>
+            <button class="filter-chip" style="font-size:11px;padding:4px 10px;cursor:pointer" @click="applyPreset('month')">Этот месяц</button>
+            <button class="filter-chip" style="font-size:11px;padding:4px 10px;cursor:pointer" @click="applyPreset('lastmonth')">Прошлый месяц</button>
+            <button class="filter-chip" style="font-size:11px;padding:4px 10px;cursor:pointer" @click="applyPreset('year')">Этот год</button>
+          </div>
+          <!-- Manual inputs -->
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+            <label style="font-size:12px;color:var(--muted-fg)">От
+              <input type="date" x-model="dpFrom"
+                     style="display:block;width:100%;margin-top:4px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:6px;color:inherit;padding:6px 8px;font-size:13px;font-family:inherit" />
+            </label>
+            <label style="font-size:12px;color:var(--muted-fg)">До
+              <input type="date" x-model="dpTo"
+                     style="display:block;width:100%;margin-top:4px;background:var(--surface-2,#2a2a2a);border:1px solid var(--border,#333);border-radius:6px;color:inherit;padding:6px 8px;font-size:13px;font-family:inherit" />
+            </label>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1;font-size:13px;padding:6px" @click="applyDateRange()">Применить</button>
+            <button class="btn" style="font-size:13px;padding:6px 12px" @click="clearDateRange()">Сбросить</button>
+          </div>
+        </div>
       </div>
-      <div class="filter-chip" :class="filters.category_id ? 'active' : ''"
-           @click="filters.category_id = ''; load()">
-        <span x-text="filters.category_id ? 'Категория: ' + categoryName(filters.category_id) : 'Все категории'"></span>
+      <!-- Category filter -->
+      <div style="position:relative">
+        <div class="filter-chip" :class="filters.category_id ? 'active' : ''" @click="categoryPickerOpen = !categoryPickerOpen">
+          <span x-text="filters.category_id ? 'Категория: ' + categoryName(filters.category_id) : 'Все категории'"></span>
+        </div>
+        <div x-show="categoryPickerOpen" @click.outside="categoryPickerOpen = false"
+             style="position:absolute;top:calc(100% + 8px);left:0;z-index:100;background:var(--surface-1,#1e1e1e);border:1px solid var(--border,#333);border-radius:10px;padding:8px;min-width:200px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+          <div class="filter-chip" style="margin-bottom:4px;cursor:pointer" @click="filters.category_id = ''; page = 1; categoryPickerOpen = false; load()">
+            Все категории
+          </div>
+          <template x-for="cat in categories" :key="cat.id">
+            <div class="filter-chip" :class="String(filters.category_id) === String(cat.id) ? 'active' : ''"
+                 style="margin-bottom:4px;cursor:pointer;display:flex;align-items:center;gap:8px"
+                 @click="filters.category_id = String(cat.id); page = 1; categoryPickerOpen = false; load()">
+              <span class="cat-dot" :style="'background:' + (cat.color || '#888')"></span>
+              <span x-text="cat.name"></span>
+            </div>
+          </template>
+        </div>
       </div>
-      <div class="filter-chip" :class="filters.account_id ? 'active' : ''"
-           @click="filters.account_id = ''; load()">
-        <span x-text="filters.account_id ? 'Счёт: ' + filters.account_id : 'Все счета'"></span>
+
+      <!-- Account filter -->
+      <div style="position:relative">
+        <div class="filter-chip" :class="filters.account_id ? 'active' : ''" @click="accountPickerOpen = !accountPickerOpen">
+          <span x-text="filters.account_id ? 'Счёт: ' + accountName(filters.account_id) : 'Все счета'"></span>
+        </div>
+        <div x-show="accountPickerOpen" @click.outside="accountPickerOpen = false"
+             style="position:absolute;top:calc(100% + 8px);left:0;z-index:100;background:var(--surface-1,#1e1e1e);border:1px solid var(--border,#333);border-radius:10px;padding:8px;min-width:200px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+          <div class="filter-chip" style="margin-bottom:4px;cursor:pointer" @click="filters.account_id = ''; page = 1; accountPickerOpen = false; load()">
+            Все счета
+          </div>
+          <template x-for="acc in accounts" :key="acc.id">
+            <div class="filter-chip" :class="String(filters.account_id) === String(acc.id) ? 'active' : ''"
+                 style="margin-bottom:4px;cursor:pointer"
+                 @click="filters.account_id = String(acc.id); page = 1; accountPickerOpen = false; load()">
+              <span x-text="acc.name"></span>
+            </div>
+          </template>
+        </div>
       </div>
     </div>
 
@@ -159,18 +220,32 @@
       error: null,
       transactions: [],
       categories: [],
+      accounts: [],
       total: 0,
       page: 1,
       perPage: 10,
       filters: { from: '', to: '', category_id: '', account_id: '' },
+      datePickerOpen: false,
+      categoryPickerOpen: false,
+      accountPickerOpen: false,
+      dpFrom: '',
+      dpTo: '',
       get totalPages() { return Math.ceil(this.total / this.perPage) || 1; },
       categoryName(id) {
         const c = this.categories.find(c => String(c.id) === String(id));
         return c ? c.name : id;
       },
+      accountName(id) {
+        const a = this.accounts.find(a => String(a.id) === String(id));
+        return a ? a.name : id;
+      },
       async init() {
-        const res = await api.get('/categories').catch(() => ({ items: [] }));
-        this.categories = res.items ?? res;
+        const [catRes, accRes] = await Promise.all([
+          api.get('/categories').catch(() => ({ items: [] })),
+          api.get('/accounts').catch(() => ({ items: [] })),
+        ]);
+        this.categories = catRes.items ?? catRes;
+        this.accounts = accRes.items ?? accRes;
         await this.load();
       },
       async load() {
@@ -189,19 +264,45 @@
         this.page = p;
         await this.load();
       },
-      toggleDateFilter() {
-        if (this.filters.from && this.filters.to) {
-          this.filters.from = '';
-          this.filters.to = '';
-        } else {
-          // default to current month
-          const now = new Date();
-          const y = now.getFullYear(), m = now.getMonth();
-          this.filters.from = new Date(y, m, 1).toISOString().slice(0, 10);
-          this.filters.to = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+      localDate(d) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      },
+      applyPreset(preset) {
+        const now = new Date();
+        const y = now.getFullYear(), m = now.getMonth();
+        let from, to;
+        if (preset === 'today') {
+          from = to = this.localDate(now);
+        } else if (preset === 'week') {
+          const day = now.getDay() === 0 ? 6 : now.getDay() - 1; // Monday=0
+          const mon = new Date(now); mon.setDate(now.getDate() - day);
+          const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+          from = this.localDate(mon); to = this.localDate(sun);
+        } else if (preset === 'month') {
+          from = `${y}-${String(m + 1).padStart(2, '0')}-01`;
+          to = this.localDate(new Date(y, m + 1, 0));
+        } else if (preset === 'lastmonth') {
+          const lm = m === 0 ? 11 : m - 1, ly = m === 0 ? y - 1 : y;
+          from = `${ly}-${String(lm + 1).padStart(2, '0')}-01`;
+          to = this.localDate(new Date(ly, lm + 1, 0));
+        } else if (preset === 'year') {
+          from = `${y}-01-01`; to = `${y}-12-31`;
         }
-        this.page = 1;
-        this.load();
+        this.dpFrom = from; this.dpTo = to;
+        this.filters.from = from; this.filters.to = to;
+        this.page = 1; this.datePickerOpen = false; this.load();
+      },
+      applyDateRange() {
+        if (!this.dpFrom || !this.dpTo) return;
+        this.filters.from = this.dpFrom;
+        this.filters.to = this.dpTo;
+        this.page = 1; this.datePickerOpen = false; this.load();
+      },
+      clearDateRange() {
+        this.filters.from = ''; this.filters.to = '';
+        this.dpFrom = ''; this.dpTo = '';
+        this.page = 1; this.datePickerOpen = false; this.load();
       },
       visiblePages() {
         const total = this.totalPages;

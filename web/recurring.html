@@ -133,7 +133,7 @@
           <div class="recurring-info">
             <div class="recurring-name">
               <span x-text="p.name"></span>
-              <span class="badge badge-overdue"  x-show="paymentStatus(p) === 'overdue'">Просрочен</span>
+              <span class="badge badge-overdue"  x-show="isOverdue(p)">Просрочен</span>
               <span class="badge badge-upcoming" x-show="paymentStatus(p) === 'upcoming'">Скоро</span>
             </div>
             <div class="recurring-desc">
@@ -141,12 +141,12 @@
               <template x-if="p.category_name">
                 <span> · <span x-text="p.category_name"></span></span>
               </template>
-              · следующее <span x-text="fmt.date(p.next_payment_date)"></span>
+              · следующее <span x-text="fmt.date(effectiveNextDate(p).toISOString())"></span>
             </div>
           </div>
           <div class="recurring-amount" x-text="'−' + fmt.money(p.amount)"></div>
           <div class="recurring-actions">
-            <template x-if="paymentStatus(p) === 'overdue'">
+            <template x-if="isOverdue(p)">
               <button class="btn btn-primary" style="font-size:12px;padding:6px 14px" @click="payNow(p)" :disabled="payingId === p.id">
                 <span x-text="payingId === p.id ? '...' : 'Оплатить'"></span>
               </button>
@@ -231,6 +231,11 @@
 </div>
 
 <script>
+  function fmtLocalDate(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
   function recurringPage() {
     const today = new Date(); today.setHours(0,0,0,0);
     const soon  = new Date(today); soon.setDate(soon.getDate() + 3);
@@ -255,17 +260,32 @@
           if (p.frequency === 'weekly')  monthly += a * 4;
           else if (p.frequency === 'yearly') monthly += a / 12;
           else monthly += a;
-          const d = new Date(p.next_payment_date).getTime();
+          const d = this.effectiveNextDate(p).getTime();
           if (d < nextTs) nextTs = d;
         }
         const nextDate = nextTs !== Infinity ? fmt.date(new Date(nextTs).toISOString()) : null;
         return { monthly, nextDate };
       },
 
-      paymentStatus(p) {
+      effectiveNextDate(p) {
         const d = new Date(p.next_payment_date); d.setHours(0,0,0,0);
-        if (d < today) return 'overdue';
-        if (d <= soon)  return 'upcoming';
+        while (d < today) {
+          if (p.frequency === 'weekly')       d.setDate(d.getDate() + 7);
+          else if (p.frequency === 'yearly')  d.setFullYear(d.getFullYear() + 1);
+          else                                d.setMonth(d.getMonth() + 1);
+        }
+        return d;
+      },
+
+      isOverdue(p) {
+        const d = new Date(p.next_payment_date); d.setHours(0,0,0,0);
+        return d < today;
+      },
+
+      paymentStatus(p) {
+        if (this.isOverdue(p)) return 'overdue';
+        const d = this.effectiveNextDate(p);
+        if (d <= soon) return 'upcoming';
         return '';
       },
 
@@ -299,7 +319,7 @@
           name: '', amount: 0, frequency: 'monthly',
           account_id: this.accounts[0]?.id ?? '',
           category_id: '',
-          next_payment_date: nextMonth.toISOString().slice(0,10),
+          next_payment_date: fmtLocalDate(nextMonth),
         };
         this.showModal = true;
       },
@@ -313,7 +333,7 @@
           frequency: p.frequency,
           account_id: p.account_id,
           category_id: p.category_id ?? '',
-          next_payment_date: new Date(p.next_payment_date).toISOString().slice(0,10),
+          next_payment_date: p.next_payment_date.slice(0, 10),
         };
         this.showModal = true;
       },
@@ -333,7 +353,7 @@
           if (this.editId) {
             const updated = await api.put('/recurring/' + this.editId, body);
             const idx = this.payments.findIndex(p => p.id === this.editId);
-            if (idx !== -1) this.payments[idx] = updated;
+            if (idx !== -1) this.payments.splice(idx, 1, updated);
           } else {
             const created = await api.post('/recurring', body);
             this.payments.push(created);
@@ -358,11 +378,12 @@
             name:        p.name,
             date:        new Date().toISOString().slice(0,10),
           });
-          // advance next_payment_date by one period
-          const next = new Date(p.next_payment_date);
-          if (p.frequency === 'weekly')  next.setDate(next.getDate() + 7);
+          // advance one period past the effective (most recent missed) date,
+          // so even if multiple periods were skipped we land on the next future date
+          const next = this.effectiveNextDate(p);
+          if (p.frequency === 'weekly')      next.setDate(next.getDate() + 7);
           else if (p.frequency === 'yearly') next.setFullYear(next.getFullYear() + 1);
-          else next.setMonth(next.getMonth() + 1);
+          else                               next.setMonth(next.getMonth() + 1);
 
           const updated = await api.put('/recurring/' + p.id, {
             name:             p.name,
@@ -370,10 +391,10 @@
             frequency:        p.frequency,
             account_id:       p.account_id,
             category_id:      p.category_id ?? null,
-            next_payment_date: next.toISOString().slice(0,10),
+            next_payment_date: fmtLocalDate(next),
           });
           const idx = this.payments.findIndex(x => x.id === p.id);
-          if (idx !== -1) this.payments[idx] = updated;
+          if (idx !== -1) this.payments.splice(idx, 1, updated);
         } catch(e) {
           alert(e.message || 'Ошибка при оплате');
         } finally {

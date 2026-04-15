@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
@@ -13,6 +11,7 @@ type TransactionFilter struct {
 	Page       int
 	Limit      int
 	CategoryID int64
+	AccountID  int64
 	From       time.Time
 	To         time.Time
 }
@@ -26,41 +25,39 @@ func (s *Store) ListTransactions(ctx context.Context, userID int64, f Transactio
 	}
 	offset := (f.Page - 1) * f.Limit
 
-	// Build dynamic WHERE clause
-	args := []any{userID}
-	conds := []string{"t.user_id = $1"}
-	n := 2
+	// Convert optional filters to pointers: nil means "no filter" in SQL
+	var catID, accID *int64
 	if f.CategoryID > 0 {
-		conds = append(conds, fmt.Sprintf("t.category_id = $%d", n))
-		args = append(args, f.CategoryID)
-		n++
+		catID = &f.CategoryID
 	}
+	if f.AccountID > 0 {
+		accID = &f.AccountID
+	}
+	var from, to *time.Time
 	if !f.From.IsZero() {
-		conds = append(conds, fmt.Sprintf("t.date >= $%d", n))
-		args = append(args, f.From)
-		n++
+		from = &f.From
 	}
 	if !f.To.IsZero() {
-		conds = append(conds, fmt.Sprintf("t.date <= $%d", n))
-		args = append(args, f.To)
-		n++
+		to = &f.To
 	}
-	where := strings.Join(conds, " AND ")
+
+	// Static parameterised query — no dynamic SQL, no injection risk.
+	// NULL filter params are skipped via "param IS NULL OR col = param".
+	const countQ = `
+		SELECT COUNT(*)
+		FROM transactions t
+		WHERE t.user_id = $1
+		  AND ($2::bigint IS NULL OR t.category_id = $2)
+		  AND ($3::bigint IS NULL OR t.account_id  = $3)
+		  AND ($4::date   IS NULL OR t.date        >= $4)
+		  AND ($5::date   IS NULL OR t.date        <= $5)`
 
 	var total int
-	if err := s.pool.QueryRow(ctx,
-		fmt.Sprintf(`SELECT COUNT(*) FROM transactions t WHERE %s`, where),
-		args...,
-	).Scan(&total); err != nil {
+	if err := s.pool.QueryRow(ctx, countQ, userID, catID, accID, from, to).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
-	// Add pagination params
-	limitArg := n
-	offsetArg := n + 1
-	args = append(args, f.Limit, offset)
-
-	rows, err := s.pool.Query(ctx, fmt.Sprintf(`
+	const listQ = `
 		SELECT t.id, t.user_id, t.account_id,
 		       COALESCE(a.name, ''),
 		       t.category_id,
@@ -68,12 +65,16 @@ func (s *Store) ListTransactions(ctx context.Context, userID int64, f Transactio
 		       t.type, t.amount, t.name, t.date, t.created_at
 		FROM transactions t
 		LEFT JOIN categories c ON c.id = t.category_id
-		LEFT JOIN accounts a ON a.id = t.account_id
-		WHERE %s
+		LEFT JOIN accounts a   ON a.id = t.account_id
+		WHERE t.user_id = $1
+		  AND ($2::bigint IS NULL OR t.category_id = $2)
+		  AND ($3::bigint IS NULL OR t.account_id  = $3)
+		  AND ($4::date   IS NULL OR t.date        >= $4)
+		  AND ($5::date   IS NULL OR t.date        <= $5)
 		ORDER BY t.date DESC, t.created_at DESC
-		LIMIT $%d OFFSET $%d`, where, limitArg, offsetArg),
-		args...,
-	)
+		LIMIT $6 OFFSET $7`
+
+	rows, err := s.pool.Query(ctx, listQ, userID, catID, accID, from, to, f.Limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -147,16 +148,34 @@ func (s *Store) DeleteTransaction(ctx context.Context, id, userID int64) error {
 		return domain.ErrNotFound
 	}
 
-	// Reverse the balance change
+	// Reverse the balance change: income deletion decreases balance, expense deletion increases it.
 	delta := -amount
 	if txType == "expense" {
 		delta = amount
 	}
-	if _, err = dbTx.Exec(ctx,
-		`UPDATE accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3`,
+
+	// Guard: only allow the update if the resulting balance stays >= 0.
+	tag, err := dbTx.Exec(ctx,
+		`UPDATE accounts SET balance = balance + $1
+		 WHERE id = $2 AND user_id = $3 AND balance + $1 >= 0`,
 		delta, accountID, userID,
-	); err != nil {
+	)
+	if err != nil {
 		return err
+	}
+	if tag.RowsAffected() == 0 {
+		// Balance would go negative — fetch current state for the error message.
+		var name string
+		var balance float64
+		_ = dbTx.QueryRow(ctx,
+			`SELECT name, balance FROM accounts WHERE id = $1 AND user_id = $2`,
+			accountID, userID,
+		).Scan(&name, &balance)
+		return &domain.InsufficientFundsError{
+			AccountName: name,
+			Balance:     balance,
+			Amount:      amount,
+		}
 	}
 
 	return dbTx.Commit(ctx)

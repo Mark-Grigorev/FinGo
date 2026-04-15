@@ -48,6 +48,11 @@ const fmt = {
   },
   date(v) {
     if (!v) return '—';
+    // Date-only strings (YYYY-MM-DD) must be parsed manually to avoid UTC→local shift
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      const [y, mo, d] = v.split('-').map(Number);
+      return new Date(y, mo - 1, d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+    }
     return new Date(v).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
   },
   pct(v) {
