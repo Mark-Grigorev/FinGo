@@ -22,6 +22,12 @@
     .skeleton-row { background: var(--surface-2, #2a2a2a); border-radius: 6px; height: 44px; margin-bottom: 8px; animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
     .error-msg { color: var(--destructive, #e74c3c); padding: 16px; font-size: 14px; background: #3d1a1a; border-radius: 8px; margin-bottom: 16px; }
+    .collapsible-toggle { display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;width:100% }
+    .collapsible-toggle:hover .chevron-icon { color: var(--fg, #e0e0e0); }
+    .chevron-icon { color: var(--muted-fg);transition:transform 0.2s ease;flex-shrink:0;margin-left:8px }
+    .chevron-icon.open { transform: rotate(180deg) }
+    .collapsible-body { overflow:hidden;transition:max-height 0.25s ease, opacity 0.2s ease;max-height:2000px;opacity:1 }
+    .collapsible-body.collapsed { max-height:0;opacity:0;pointer-events:none }
   </style>
 </head>
 <body>
@@ -122,39 +128,47 @@
           <!-- Left column -->
           <div class="dashboard-left">
             <div class="card" style="margin-bottom:20px">
-              <div class="section-header">
+              <div class="section-header collapsible-toggle" @click="toggleSection('incomeExpenseChart')">
                 <span style="font-weight:600;font-size:14px">Доходы и расходы</span>
-                <div style="display:flex;gap:12px;font-size:12px;color:var(--muted-fg)">
-                  <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#4ade80;display:inline-block"></span>Доходы</span>
-                  <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#FF8400;display:inline-block"></span>Расходы</span>
+                <div style="display:flex;align-items:center;gap:12px">
+                  <div style="display:flex;gap:12px;font-size:12px;color:var(--muted-fg)" x-show="!collapsed.incomeExpenseChart">
+                    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#4ade80;display:inline-block"></span>Доходы</span>
+                    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#FF8400;display:inline-block"></span>Расходы</span>
+                  </div>
+                  <svg class="chevron-icon" :class="collapsed.incomeExpenseChart ? '' : 'open'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
               </div>
-              <div class="chart-container" style="height:200px">
-                <canvas id="dashBarChart"></canvas>
+              <div class="collapsible-body" :class="collapsed.incomeExpenseChart ? 'collapsed' : ''">
+                <div class="chart-container" style="height:200px;margin-top:12px">
+                  <canvas id="dashBarChart"></canvas>
+                </div>
               </div>
             </div>
 
             <!-- Recent transactions -->
             <div class="card">
-              <div class="section-header" style="margin-bottom:8px">
+              <div class="section-header collapsible-toggle" @click="toggleSection('recentTransactions')">
                 <span style="font-weight:600;font-size:14px">Последние транзакции</span>
-                <a href="/transactions" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
-              </div>
-
-              <template x-for="tx in transactions" :key="tx.id">
-                <div class="tx-row">
-                  <div class="tx-icon" x-text="tx.icon || '💳'"></div>
-                  <div class="tx-info">
-                    <div class="tx-name" x-text="tx.name"></div>
-                    <div class="tx-cat" x-text="tx.category_name"></div>
-                  </div>
-                  <div class="tx-amount" :class="tx.type === 'income' ? 'amount-pos' : 'amount-neg'"
-                       x-text="(tx.type === 'income' ? '+' : '-') + fmt.money(tx.amount)"></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <a href="/transactions" class="btn btn-ghost" style="font-size:12px;padding:4px 10px" @click.stop>Все →</a>
+                  <svg class="chevron-icon" :class="collapsed.recentTransactions ? '' : 'open'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
-              </template>
-
-              <div x-show="transactions.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
-                Нет транзакций
+              </div>
+              <div class="collapsible-body" :class="collapsed.recentTransactions ? 'collapsed' : ''">
+                <template x-for="tx in transactions" :key="tx.id">
+                  <div class="tx-row">
+                    <div class="tx-icon" x-text="tx.icon || '💳'"></div>
+                    <div class="tx-info">
+                      <div class="tx-name" x-text="tx.name"></div>
+                      <div class="tx-cat" x-text="tx.category_name"></div>
+                    </div>
+                    <div class="tx-amount" :class="tx.type === 'income' ? 'amount-pos' : 'amount-neg'"
+                         x-text="(tx.type === 'income' ? '+' : '-') + fmt.money(tx.amount)"></div>
+                  </div>
+                </template>
+                <div x-show="transactions.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                  Нет транзакций
+                </div>
               </div>
             </div>
           </div>
@@ -163,49 +177,59 @@
           <div class="dashboard-right">
             <!-- Budget overview -->
             <div class="card" style="margin-bottom:20px">
-              <div class="section-header">
+              <div class="section-header collapsible-toggle" @click="toggleSection('budgets')">
                 <span style="font-weight:600;font-size:14px">Бюджеты</span>
-                <a href="/budgets" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <a href="/budgets" class="btn btn-ghost" style="font-size:12px;padding:4px 10px" @click.stop>Все →</a>
+                  <svg class="chevron-icon" :class="collapsed.budgets ? '' : 'open'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
               </div>
-              <div style="display:flex;flex-direction:column;gap:12px">
-                <template x-for="b in budgets.slice(0, 4)" :key="b.id">
-                  <div>
-                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                      <span :style="b.pct > 100 ? 'color:var(--destructive);font-weight:600' : ''" x-text="b.name + (b.pct > 100 ? ' ⚠' : '')"></span>
-                      <span style="font-family:var(--font-mono)" :style="b.pct > 100 ? 'color:var(--destructive)' : ''"
-                            x-text="fmt.money(b.spent) + ' / ' + fmt.money(b.limit)"></span>
+              <div class="collapsible-body" :class="collapsed.budgets ? 'collapsed' : ''">
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+                  <template x-for="b in budgets.slice(0, 4)" :key="b.id">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                        <span :style="b.pct > 100 ? 'color:var(--destructive);font-weight:600' : ''" x-text="b.name + (b.pct > 100 ? ' ⚠' : '')"></span>
+                        <span style="font-family:var(--font-mono)" :style="b.pct > 100 ? 'color:var(--destructive)' : ''"
+                              x-text="fmt.money(b.spent) + ' / ' + fmt.money(b.limit)"></span>
+                      </div>
+                      <div class="progress-bar-wrap">
+                        <div class="progress-bar"
+                             :class="progressClass(b.pct)"
+                             :style="'width:' + Math.min(b.pct, 100) + '%'"></div>
+                      </div>
                     </div>
-                    <div class="progress-bar-wrap">
-                      <div class="progress-bar"
-                           :class="progressClass(b.pct)"
-                           :style="'width:' + Math.min(b.pct, 100) + '%'"></div>
-                    </div>
-                  </div>
-                </template>
-              </div>
-              <div x-show="budgets.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
-                Бюджеты не настроены — <a href="/budgets" style="color:var(--primary)">добавить</a>
+                  </template>
+                </div>
+                <div x-show="budgets.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                  Бюджеты не настроены — <a href="/budgets" style="color:var(--primary)">добавить</a>
+                </div>
               </div>
             </div>
 
             <!-- Recurring payments -->
             <div class="card">
-              <div class="section-header" style="margin-bottom:8px">
+              <div class="section-header collapsible-toggle" @click="toggleSection('recurring')">
                 <span style="font-weight:600;font-size:14px">Регулярные платежи</span>
-                <a href="/recurring" class="btn btn-ghost" style="font-size:12px;padding:4px 10px">Все →</a>
-              </div>
-              <template x-for="r in recurring" :key="r.id">
-                <div class="tx-row">
-                  <div class="tx-icon" x-text="freqIcon(r.frequency)"></div>
-                  <div class="tx-info">
-                    <div class="tx-name" x-text="r.name"></div>
-                    <div class="tx-cat" x-text="freqLabel(r.frequency) + ' · ' + new Date(r.next_payment_date).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'})"></div>
-                  </div>
-                  <div class="tx-amount amount-neg" x-text="'-' + fmt.money(r.amount)"></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <a href="/recurring" class="btn btn-ghost" style="font-size:12px;padding:4px 10px" @click.stop>Все →</a>
+                  <svg class="chevron-icon" :class="collapsed.recurring ? '' : 'open'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
-              </template>
-              <div x-show="recurring.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
-                Нет регулярных платежей
+              </div>
+              <div class="collapsible-body" :class="collapsed.recurring ? 'collapsed' : ''">
+                <template x-for="r in recurring" :key="r.id">
+                  <div class="tx-row">
+                    <div class="tx-icon" x-text="freqIcon(r.frequency)"></div>
+                    <div class="tx-info">
+                      <div class="tx-name" x-text="r.name"></div>
+                      <div class="tx-cat" x-text="freqLabel(r.frequency) + ' · ' + new Date(r.next_payment_date).toLocaleDateString('ru-RU', {day:'2-digit',month:'short'})"></div>
+                    </div>
+                    <div class="tx-amount amount-neg" x-text="'-' + fmt.money(r.amount)"></div>
+                  </div>
+                </template>
+                <div x-show="recurring.length === 0" style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                  Нет регулярных платежей
+                </div>
               </div>
             </div>
           </div>
@@ -213,40 +237,44 @@
 
         <!-- Расходы по категориям -->
         <div class="card" style="margin-top:20px">
-          <div class="section-header" style="margin-bottom:16px">
+          <div class="section-header collapsible-toggle" @click="toggleSection('categoryExpenses')">
             <span style="font-weight:600;font-size:14px">Расходы по категориям</span>
-            <span style="font-size:12px;color:var(--muted-fg)" x-text="fmt.money(summary.expenses) + ' всего'"></span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:12px;color:var(--muted-fg)" x-show="!collapsed.categoryExpenses" x-text="fmt.money(summary.expenses) + ' всего'"></span>
+              <svg class="chevron-icon" :class="collapsed.categoryExpenses ? '' : 'open'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
           </div>
+          <div class="collapsible-body" :class="collapsed.categoryExpenses ? 'collapsed' : ''">
+            <template x-if="pieData.length === 0">
+              <div style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
+                Нет расходов за выбранный период
+              </div>
+            </template>
 
-          <template x-if="pieData.length === 0">
-            <div style="color:var(--muted-fg);font-size:13px;padding:16px 0;text-align:center">
-              Нет расходов за выбранный период
-            </div>
-          </template>
-
-          <template x-if="pieData.length > 0">
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <template x-for="cat in pieData" :key="cat.name">
-                <div style="display:grid;grid-template-columns:12px 1fr auto auto;align-items:center;gap:10px">
-                  <!-- цвет категории -->
-                  <span :style="'width:12px;height:12px;border-radius:3px;background:' + cat.color + ';flex-shrink:0;display:inline-block'"></span>
-                  <!-- прогресс-бар + название -->
-                  <div style="min-width:0">
-                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-                      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="cat.name"></span>
-                      <span style="color:var(--muted-fg);font-size:12px;margin-left:8px;flex-shrink:0"
-                            x-text="summary.expenses > 0 ? (cat.amount / summary.expenses * 100).toFixed(1) + '%' : '—'"></span>
+            <template x-if="pieData.length > 0">
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+                <template x-for="cat in pieData" :key="cat.name">
+                  <div style="display:grid;grid-template-columns:12px 1fr auto auto;align-items:center;gap:10px">
+                    <!-- цвет категории -->
+                    <span :style="'width:12px;height:12px;border-radius:3px;background:' + cat.color + ';flex-shrink:0;display:inline-block'"></span>
+                    <!-- прогресс-бар + название -->
+                    <div style="min-width:0">
+                      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" x-text="cat.name"></span>
+                        <span style="color:var(--muted-fg);font-size:12px;margin-left:8px;flex-shrink:0"
+                              x-text="summary.expenses > 0 ? (cat.amount / summary.expenses * 100).toFixed(1) + '%' : '—'"></span>
+                      </div>
+                      <div style="height:4px;border-radius:2px;background:var(--surface-2,#2a2a2a);overflow:hidden">
+                        <div :style="'height:100%;border-radius:2px;background:' + cat.color + ';width:' + (summary.expenses > 0 ? Math.min(cat.amount / summary.expenses * 100, 100) : 0) + '%'"></div>
+                      </div>
                     </div>
-                    <div style="height:4px;border-radius:2px;background:var(--surface-2,#2a2a2a);overflow:hidden">
-                      <div :style="'height:100%;border-radius:2px;background:' + cat.color + ';width:' + (summary.expenses > 0 ? Math.min(cat.amount / summary.expenses * 100, 100) : 0) + '%'"></div>
-                    </div>
+                    <!-- сумма -->
+                    <span style="font-family:var(--font-mono);font-size:13px;white-space:nowrap" x-text="fmt.money(cat.amount)"></span>
                   </div>
-                  <!-- сумма -->
-                  <span style="font-family:var(--font-mono);font-size:13px;white-space:nowrap" x-text="fmt.money(cat.amount)"></span>
-                </div>
-              </template>
-            </div>
-          </template>
+                </template>
+              </div>
+            </template>
+          </div>
         </div>
 
       </div>
@@ -260,12 +288,21 @@
     const y = now.getFullYear(), mo = String(now.getMonth() + 1).padStart(2, '0');
     const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
 
+    const COLLAPSE_KEY = 'fingo_dashboard_collapsed';
+    const defaultCollapsed = { incomeExpenseChart: false, recentTransactions: false, budgets: false, recurring: false, categoryExpenses: false };
+    let savedCollapsed = defaultCollapsed;
+    try {
+      const stored = localStorage.getItem(COLLAPSE_KEY);
+      if (stored) savedCollapsed = { ...defaultCollapsed, ...JSON.parse(stored) };
+    } catch(e) {}
+
     return {
       loading: true,
       error: null,
       from: `${y}-${mo}-01`,
       to: `${y}-${mo}-${String(lastDay).padStart(2, '0')}`,
       activePreset: 'month',
+      collapsed: savedCollapsed,
       summary: { balance: 0, income: 0, expenses: 0, savings: 0, balance_pct: 0, income_pct: 0, expenses_pct: 0, savings_pct: 0 },
       transactions: [],
       budgets: [],
@@ -362,6 +399,13 @@
             },
           },
         });
+      },
+      toggleSection(key) {
+        this.collapsed[key] = !this.collapsed[key];
+        try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(this.collapsed)); } catch(e) {}
+        if (key === 'incomeExpenseChart' && !this.collapsed[key]) {
+          this.$nextTick(() => this.renderChart());
+        }
       },
       badgeClass(pct) { return pct >= 0 ? 'badge-up' : 'badge-down'; },
       progressClass(pct) { return pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok'; },

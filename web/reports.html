@@ -124,21 +124,21 @@
           <div class="report-row-label">Доходы</div>
           <div style="display:flex;align-items:center">
             <span class="report-row-value" x-text="fmt.money(comparison.income)"></span>
-            <span class="report-row-change" :class="pctClass(comparison.income_pct)" x-text="(comparison.income_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.income_pct) + '%'"></span>
+            <span class="report-row-change" :class="pctClass(comparison.income_pct)" x-text="(comparison.income_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.income_pct).toFixed(1) + '%'"></span>
           </div>
         </div>
         <div class="report-row">
           <div class="report-row-label">Расходы</div>
           <div style="display:flex;align-items:center">
             <span class="report-row-value" x-text="fmt.money(comparison.expenses)"></span>
-            <span class="report-row-change" :class="pctClass(comparison.expenses_pct)" x-text="(comparison.expenses_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.expenses_pct) + '%'"></span>
+            <span class="report-row-change" :class="pctClass(comparison.expenses_pct)" x-text="(comparison.expenses_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.expenses_pct).toFixed(1) + '%'"></span>
           </div>
         </div>
         <div class="report-row">
           <div class="report-row-label">Накопления</div>
           <div style="display:flex;align-items:center">
             <span class="report-row-value" x-text="fmt.money(comparison.savings)"></span>
-            <span class="report-row-change" :class="pctClass(comparison.savings_pct)" x-text="(comparison.savings_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.savings_pct) + '%'"></span>
+            <span class="report-row-change" :class="pctClass(comparison.savings_pct)" x-text="(comparison.savings_pct >= 0 ? '▲ ' : '▼ ') + Math.abs(comparison.savings_pct).toFixed(1) + '%'"></span>
           </div>
         </div>
 
