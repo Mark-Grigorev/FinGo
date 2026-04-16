@@ -7,20 +7,20 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
 func TestAuthLogin_BadJSON(t *testing.T) {
 	env := newTestEnv()
-	body := strings.NewReader(`{"email": "not-an-email"}`) // missing password, invalid email
+	body := strings.NewReader(`{"email": "not-an-email"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", body)
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthLogin_WrongCredentials(t *testing.T) {
@@ -34,10 +34,7 @@ func TestAuthLogin_WrongCredentials(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusUnauthorized)
-	}
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
 func TestAuthLogin_Success(t *testing.T) {
@@ -55,14 +52,8 @@ func TestAuthLogin_Success(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
-	cookie := w.Header().Get("Set-Cookie")
-	if !strings.Contains(cookie, "session_token") {
-		t.Errorf("expected session_token cookie, got: %q", cookie)
-	}
+	require.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Header().Get("Set-Cookie"), "session_token")
 }
 
 func TestAuthRegister_BadJSON(t *testing.T) {
@@ -72,10 +63,7 @@ func TestAuthRegister_BadJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthRegister_Success(t *testing.T) {
@@ -89,14 +77,8 @@ func TestAuthRegister_Success(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusCreated)
-	}
-	cookie := w.Header().Get("Set-Cookie")
-	if !strings.Contains(cookie, "session_token") {
-		t.Errorf("expected session_token cookie, got: %q", cookie)
-	}
+	require.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Header().Get("Set-Cookie"), "session_token")
 }
 
 func TestAuthLogout(t *testing.T) {
@@ -104,10 +86,7 @@ func TestAuthLogout(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNoContent)
-	}
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestAuthMe_Success(t *testing.T) {
@@ -120,8 +99,5 @@ func TestAuthMe_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }

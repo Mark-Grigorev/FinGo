@@ -7,25 +7,23 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
 func TestAccountList_Success(t *testing.T) {
 	env := newTestEnv()
 	env.store.listAccountsFn = func(_ context.Context, _ int64) ([]domain.Account, error) {
-		return []domain.Account{
-			{ID: 1, Name: "Cash", Type: "cash", Currency: "RUB"},
-		}, nil
+		return []domain.Account{{ID: 1, Name: "Cash", Type: "cash", Currency: "RUB"}}, nil
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/accounts", nil)
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestAccountCreate_BadJSON(t *testing.T) {
@@ -35,10 +33,7 @@ func TestAccountCreate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAccountCreate_EmptyName(t *testing.T) {
@@ -49,10 +44,7 @@ func TestAccountCreate_EmptyName(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAccountCreate_Success(t *testing.T) {
@@ -68,10 +60,7 @@ func TestAccountCreate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusCreated)
-	}
+	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
 func TestAccountDelete_NotFound(t *testing.T) {
@@ -84,24 +73,16 @@ func TestAccountDelete_NotFound(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
-	}
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestAccountDelete_Success(t *testing.T) {
 	env := newTestEnv()
-	env.store.deleteAccountFn = func(_ context.Context, _, _ int64) error {
-		return nil
-	}
+	env.store.deleteAccountFn = func(_ context.Context, _, _ int64) error { return nil }
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/accounts/1", nil)
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNoContent)
-	}
+	require.Equal(t, http.StatusNoContent, w.Code)
 }

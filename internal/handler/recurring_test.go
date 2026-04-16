@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -21,10 +24,7 @@ func TestRecurringList_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestRecurringCreate_BadJSON(t *testing.T) {
@@ -34,10 +34,7 @@ func TestRecurringCreate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestRecurringCreate_Success(t *testing.T) {
@@ -53,10 +50,7 @@ func TestRecurringCreate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusCreated, w.Body.String())
-	}
+	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
 func TestRecurringUpdate_BadID(t *testing.T) {
@@ -66,10 +60,7 @@ func TestRecurringUpdate_BadID(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestRecurringUpdate_BadJSON(t *testing.T) {
@@ -79,10 +70,7 @@ func TestRecurringUpdate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestRecurringUpdate_Success(t *testing.T) {
@@ -97,10 +85,7 @@ func TestRecurringUpdate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusOK, w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestRecurringDelete_BadID(t *testing.T) {
@@ -109,10 +94,7 @@ func TestRecurringDelete_BadID(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestRecurringDelete_NotFound(t *testing.T) {
@@ -125,24 +107,16 @@ func TestRecurringDelete_NotFound(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
-	}
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestRecurringDelete_Success(t *testing.T) {
 	env := newTestEnv()
-	env.store.deleteRecurringFn = func(_ context.Context, _, _ int64) error {
-		return nil
-	}
+	env.store.deleteRecurringFn = func(_ context.Context, _, _ int64) error { return nil }
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/recurring/1", nil)
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNoContent)
-	}
+	require.Equal(t, http.StatusNoContent, w.Code)
 }

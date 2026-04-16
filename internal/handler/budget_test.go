@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -21,10 +24,7 @@ func TestBudgetList_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestBudgetList_WithMonth(t *testing.T) {
@@ -37,10 +37,7 @@ func TestBudgetList_WithMonth(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestBudgetCreate_BadJSON(t *testing.T) {
@@ -50,10 +47,7 @@ func TestBudgetCreate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestBudgetCreate_Success(t *testing.T) {
@@ -69,10 +63,7 @@ func TestBudgetCreate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusCreated)
-	}
+	assert.Equal(t, http.StatusCreated, w.Code)
 }
 
 func TestBudgetUpdate_BadID(t *testing.T) {
@@ -82,10 +73,7 @@ func TestBudgetUpdate_BadID(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestBudgetUpdate_BadJSON(t *testing.T) {
@@ -95,10 +83,7 @@ func TestBudgetUpdate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestBudgetUpdate_Success(t *testing.T) {
@@ -113,10 +98,7 @@ func TestBudgetUpdate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestBudgetDelete_BadID(t *testing.T) {
@@ -125,10 +107,7 @@ func TestBudgetDelete_BadID(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestBudgetDelete_NotFound(t *testing.T) {
@@ -141,24 +120,16 @@ func TestBudgetDelete_NotFound(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotFound {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNotFound)
-	}
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestBudgetDelete_Success(t *testing.T) {
 	env := newTestEnv()
-	env.store.deleteBudgetFn = func(_ context.Context, _, _ int64) error {
-		return nil
-	}
+	env.store.deleteBudgetFn = func(_ context.Context, _, _ int64) error { return nil }
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/budgets/1", nil)
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusNoContent)
-	}
+	require.Equal(t, http.StatusNoContent, w.Code)
 }

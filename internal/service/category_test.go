@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -17,12 +20,9 @@ func TestCategoryList_Success(t *testing.T) {
 	}
 	svc := NewCategory(store, slog.Default())
 	got, err := svc.List(context.Background(), 1)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(got) != 1 || got[0].Name != "Food" {
-		t.Errorf("unexpected list: %v", got)
-	}
+	require.NoError(t, err)
+	require.Len(t, got, 1)
+	assert.Equal(t, "Food", got[0].Name)
 }
 
 func TestCategoryCreate_InvalidInput(t *testing.T) {
@@ -35,9 +35,8 @@ func TestCategoryCreate_InvalidInput(t *testing.T) {
 	}
 	for _, c := range cases {
 		_, err := svc.Create(context.Background(), 1, c.name, "", "", c.typ)
-		if err != domain.ErrInvalidInput {
-			t.Errorf("Create(%q,%q): expected ErrInvalidInput, got %v", c.name, c.typ, err)
-		}
+		assert.ErrorIsf(t, err, domain.ErrInvalidInput,
+			"Create(%q, %q)", c.name, c.typ)
 	}
 }
 
@@ -51,40 +50,28 @@ func TestCategoryCreate_Defaults(t *testing.T) {
 	}
 	svc := NewCategory(store, slog.Default())
 	_, err := svc.Create(context.Background(), 1, "Food", "", "", "expense")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.Icon == "" {
-		t.Error("expected default icon")
-	}
-	if got.Color == "" {
-		t.Error("expected default color")
-	}
+	require.NoError(t, err)
+	assert.NotEmpty(t, got.Icon)
+	assert.NotEmpty(t, got.Color)
 }
 
 func TestCategoryCreate_Success(t *testing.T) {
 	want := &domain.Category{ID: 3, Name: "Salary", Type: "income"}
 	store := &mockStore{
-		createCategoryFn: func(_ context.Context, c *domain.Category) (*domain.Category, error) {
+		createCategoryFn: func(_ context.Context, _ *domain.Category) (*domain.Category, error) {
 			return want, nil
 		},
 	}
 	svc := NewCategory(store, slog.Default())
 	got, err := svc.Create(context.Background(), 1, "Salary", "💰", "#00FF00", "income")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.ID != 3 {
-		t.Errorf("got.ID = %d, want 3", got.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(3), got.ID)
 }
 
 func TestCategoryUpdate_EmptyName(t *testing.T) {
 	svc := NewCategory(&mockStore{}, slog.Default())
 	_, err := svc.Update(context.Background(), 1, 1, "", "", "")
-	if err != domain.ErrInvalidInput {
-		t.Errorf("expected ErrInvalidInput, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestCategoryUpdate_Success(t *testing.T) {
@@ -96,27 +83,19 @@ func TestCategoryUpdate_Success(t *testing.T) {
 	}
 	svc := NewCategory(store, slog.Default())
 	got, err := svc.Update(context.Background(), 2, 1, "Transport", "🚗", "#FF0000")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.ID != 2 {
-		t.Errorf("got.ID = %d, want 2", got.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), got.ID)
 }
 
 func TestCategoryDelete_Success(t *testing.T) {
 	called := false
 	store := &mockStore{
-		deleteCategoryFn: func(_ context.Context, id, userID int64) error {
+		deleteCategoryFn: func(_ context.Context, _, _ int64) error {
 			called = true
 			return nil
 		},
 	}
 	svc := NewCategory(store, slog.Default())
-	if err := svc.Delete(context.Background(), 1, 1); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !called {
-		t.Error("DeleteCategory was not called")
-	}
+	require.NoError(t, svc.Delete(context.Background(), 1, 1))
+	assert.True(t, called, "DeleteCategory was not called")
 }

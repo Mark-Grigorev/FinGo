@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -17,10 +19,7 @@ func TestAccountUpdate_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAccountUpdate_EmptyName(t *testing.T) {
@@ -31,10 +30,7 @@ func TestAccountUpdate_EmptyName(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAccountUpdate_Success(t *testing.T) {
@@ -49,8 +45,5 @@ func TestAccountUpdate_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusOK, w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }

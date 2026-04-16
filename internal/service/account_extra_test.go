@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -17,12 +20,8 @@ func TestAccountList_Success(t *testing.T) {
 	}
 	svc := NewAccount(store, slog.Default())
 	got, err := svc.List(context.Background(), 1)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(got) != 2 {
-		t.Errorf("len = %d, want 2", len(got))
-	}
+	require.NoError(t, err)
+	assert.Len(t, got, 2)
 }
 
 func TestAccountGet_Success(t *testing.T) {
@@ -37,10 +36,6 @@ func TestAccountGet_Success(t *testing.T) {
 	}
 	svc := NewAccount(store, slog.Default())
 	got, err := svc.Get(context.Background(), 5, 1)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.ID != 5 {
-		t.Errorf("got.ID = %d, want 5", got.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(5), got.ID)
 }

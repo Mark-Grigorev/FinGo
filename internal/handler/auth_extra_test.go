@@ -8,6 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
@@ -18,10 +21,7 @@ func TestAuthUpdateProfile_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthUpdateProfile_Success(t *testing.T) {
@@ -36,10 +36,7 @@ func TestAuthUpdateProfile_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusOK, w.Body.String())
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestAuthChangePassword_BadJSON(t *testing.T) {
@@ -49,10 +46,7 @@ func TestAuthChangePassword_BadJSON(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthChangePassword_Success(t *testing.T) {
@@ -60,9 +54,7 @@ func TestAuthChangePassword_Success(t *testing.T) {
 	env.store.getUserByIDFn = func(_ context.Context, _ int64) (*domain.User, error) {
 		return &domain.User{ID: 1, PasswordHash: makeHash("oldpassword")}, nil
 	}
-	env.store.updatePasswordFn = func(_ context.Context, _ int64, _ string) error {
-		return nil
-	}
+	env.store.updatePasswordFn = func(_ context.Context, _ int64, _ string) error { return nil }
 
 	body := strings.NewReader(`{"old_password":"oldpassword","new_password":"newpassword"}`)
 	req := httptest.NewRequest(http.MethodPut, "/api/user/password", body)
@@ -70,10 +62,7 @@ func TestAuthChangePassword_Success(t *testing.T) {
 	req.Header.Set("Authorization", env.bearerToken(1))
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusNoContent, w.Body.String())
-	}
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }
 
 func TestAuthForgotPassword_BadJSON(t *testing.T) {
@@ -82,10 +71,7 @@ func TestAuthForgotPassword_BadJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthForgotPassword_Success(t *testing.T) {
@@ -102,10 +88,7 @@ func TestAuthForgotPassword_Success(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusOK)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestAuthResetPassword_BadJSON(t *testing.T) {
@@ -114,10 +97,7 @@ func TestAuthResetPassword_BadJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("status = %d, want %d", w.Code, http.StatusBadRequest)
-	}
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAuthResetPassword_Success(t *testing.T) {
@@ -129,20 +109,13 @@ func TestAuthResetPassword_Success(t *testing.T) {
 			ExpiresAt: time.Now().Add(10 * time.Minute),
 		}, nil
 	}
-	env.store.updatePasswordFn = func(_ context.Context, _ int64, _ string) error {
-		return nil
-	}
-	env.store.markPasswordResetUsedFn = func(_ context.Context, _ string) error {
-		return nil
-	}
+	env.store.updatePasswordFn = func(_ context.Context, _ int64, _ string) error { return nil }
+	env.store.markPasswordResetUsedFn = func(_ context.Context, _ string) error { return nil }
 
 	body := strings.NewReader(`{"token":"validtoken","new_password":"newpassword"}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/reset-password", body)
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	env.router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNoContent {
-		t.Errorf("status = %d, want %d; body: %s", w.Code, http.StatusNoContent, w.Body.String())
-	}
+	require.Equal(t, http.StatusNoContent, w.Code)
 }
