@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
@@ -15,26 +17,20 @@ import (
 func newTestMaker(t *testing.T) *token.Maker {
 	t.Helper()
 	m, err := token.New("", time.Hour)
-	if err != nil {
-		t.Fatalf("token.New: %v", err)
-	}
+	require.NoError(t, err)
 	return m
 }
 
 func TestAuthLogin_EmptyEmail(t *testing.T) {
 	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "", "password")
-	if err != domain.ErrInvalidInput {
-		t.Errorf("expected ErrInvalidInput, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestAuthLogin_EmptyPassword(t *testing.T) {
 	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "")
-	if err != domain.ErrInvalidInput {
-		t.Errorf("expected ErrInvalidInput, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestAuthLogin_UserNotFound(t *testing.T) {
@@ -45,9 +41,7 @@ func TestAuthLogin_UserNotFound(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "notexist@example.com", "password")
-	if err != domain.ErrUnauthorized {
-		t.Errorf("expected ErrUnauthorized, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }
 
 func TestAuthLogin_WrongPassword(t *testing.T) {
@@ -59,9 +53,7 @@ func TestAuthLogin_WrongPassword(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "wrong")
-	if err != domain.ErrUnauthorized {
-		t.Errorf("expected ErrUnauthorized, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }
 
 func TestAuthLogin_Success(t *testing.T) {
@@ -74,18 +66,10 @@ func TestAuthLogin_Success(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, tok, payload, err := svc.Login(context.Background(), "USER@example.com", "password123")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ID != 7 {
-		t.Errorf("user.ID = %d, want 7", user.ID)
-	}
-	if tok == "" {
-		t.Error("expected non-empty token string")
-	}
-	if payload.UserID != 7 {
-		t.Errorf("payload.UserID = %d, want 7", payload.UserID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(7), user.ID)
+	assert.NotEmpty(t, tok)
+	assert.Equal(t, int64(7), payload.UserID)
 }
 
 func TestAuthRegister_InvalidInput(t *testing.T) {
@@ -99,9 +83,8 @@ func TestAuthRegister_InvalidInput(t *testing.T) {
 	}
 	for _, c := range cases {
 		_, _, _, err := svc.Register(context.Background(), c.email, c.name, c.password)
-		if err != domain.ErrInvalidInput {
-			t.Errorf("Register(%q,%q,%q): expected ErrInvalidInput, got %v", c.email, c.name, c.password, err)
-		}
+		assert.ErrorIsf(t, err, domain.ErrInvalidInput,
+			"Register(%q,%q,%q)", c.email, c.name, c.password)
 	}
 }
 
@@ -113,9 +96,7 @@ func TestAuthRegister_AlreadyExists(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	_, _, _, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
-	if err != domain.ErrAlreadyExists {
-		t.Errorf("expected ErrAlreadyExists, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrAlreadyExists)
 }
 
 func TestAuthRegister_Success(t *testing.T) {
@@ -127,18 +108,10 @@ func TestAuthRegister_Success(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, tok, payload, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ID != 5 {
-		t.Errorf("user.ID = %d, want 5", user.ID)
-	}
-	if tok == "" {
-		t.Error("expected non-empty token")
-	}
-	if payload.UserID != 5 {
-		t.Errorf("payload.UserID = %d, want 5", payload.UserID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(5), user.ID)
+	assert.NotEmpty(t, tok)
+	assert.Equal(t, int64(5), payload.UserID)
 }
 
 func TestAuthGetUser(t *testing.T) {
@@ -153,10 +126,6 @@ func TestAuthGetUser(t *testing.T) {
 	}
 	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
 	user, err := svc.GetUser(context.Background(), 3)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if user.ID != 3 {
-		t.Errorf("user.ID = %d, want 3", user.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(3), user.ID)
 }

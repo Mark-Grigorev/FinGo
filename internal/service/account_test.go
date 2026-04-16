@@ -5,15 +5,16 @@ import (
 	"log/slog"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Mark-Grigorev/FinGo/internal/domain"
 )
 
 func TestAccountCreate_EmptyName(t *testing.T) {
 	svc := NewAccount(&mockStore{}, slog.Default())
 	_, err := svc.Create(context.Background(), 1, CreateAccountInput{Name: "   "})
-	if err != domain.ErrInvalidInput {
-		t.Errorf("expected ErrInvalidInput, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestAccountCreate_Defaults(t *testing.T) {
@@ -26,40 +27,28 @@ func TestAccountCreate_Defaults(t *testing.T) {
 	}
 	svc := NewAccount(store, slog.Default())
 	_, err := svc.Create(context.Background(), 1, CreateAccountInput{Name: "Cash"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got.Type != "card" {
-		t.Errorf("Type = %q, want %q", got.Type, "card")
-	}
-	if got.Currency != "RUB" {
-		t.Errorf("Currency = %q, want %q", got.Currency, "RUB")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "card", got.Type)
+	assert.Equal(t, "RUB", got.Currency)
 }
 
 func TestAccountCreate_Success(t *testing.T) {
 	want := &domain.Account{ID: 10, UserID: 1, Name: "Salary", Type: "card", Currency: "USD"}
 	store := &mockStore{
-		createAccountFn: func(_ context.Context, a *domain.Account) (*domain.Account, error) {
+		createAccountFn: func(_ context.Context, _ *domain.Account) (*domain.Account, error) {
 			return want, nil
 		},
 	}
 	svc := NewAccount(store, slog.Default())
 	acc, err := svc.Create(context.Background(), 1, CreateAccountInput{Name: "Salary", Type: "card", Currency: "USD"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if acc.ID != 10 {
-		t.Errorf("acc.ID = %d, want 10", acc.ID)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, int64(10), acc.ID)
 }
 
 func TestAccountUpdate_EmptyName(t *testing.T) {
 	svc := NewAccount(&mockStore{}, slog.Default())
 	_, err := svc.Update(context.Background(), 1, 1, UpdateAccountInput{Name: ""})
-	if err != domain.ErrInvalidInput {
-		t.Errorf("expected ErrInvalidInput, got %v", err)
-	}
+	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestAccountUpdate_Defaults(t *testing.T) {
@@ -72,18 +61,10 @@ func TestAccountUpdate_Defaults(t *testing.T) {
 	}
 	svc := NewAccount(store, slog.Default())
 	_, err := svc.Update(context.Background(), 1, 1, UpdateAccountInput{Name: "Wallet"})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if gotName != "Wallet" {
-		t.Errorf("name = %q, want %q", gotName, "Wallet")
-	}
-	if gotType != "card" {
-		t.Errorf("type = %q, want %q", gotType, "card")
-	}
-	if gotCurrency != "RUB" {
-		t.Errorf("currency = %q, want %q", gotCurrency, "RUB")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, "Wallet", gotName)
+	assert.Equal(t, "card", gotType)
+	assert.Equal(t, "RUB", gotCurrency)
 }
 
 func TestAccountDelete_DelegatesToStore(t *testing.T) {
@@ -98,10 +79,6 @@ func TestAccountDelete_DelegatesToStore(t *testing.T) {
 		},
 	}
 	svc := NewAccount(store, slog.Default())
-	if err := svc.Delete(context.Background(), 5, 2); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !called {
-		t.Error("store.DeleteAccount was not called")
-	}
+	require.NoError(t, svc.Delete(context.Background(), 5, 2))
+	assert.True(t, called, "store.DeleteAccount was not called")
 }

@@ -141,7 +141,7 @@
               <template x-if="p.category_name">
                 <span> · <span x-text="p.category_name"></span></span>
               </template>
-              · следующее <span x-text="fmt.date(effectiveNextDate(p).toISOString())"></span>
+              · следующее <span x-text="fmt.date(fmtLocalDate(effectiveNextDate(p)))"></span>
             </div>
           </div>
           <div class="recurring-amount" x-text="'−' + fmt.money(p.amount)"></div>
@@ -186,7 +186,7 @@
           </div>
           <div class="form-field">
             <label>Периодичность</label>
-            <select x-model="form.frequency">
+            <select x-model="form.frequency" @change="if (!editId) form.next_payment_date = defaultDateForFreq(form.frequency)">
               <option value="monthly">Ежемесячно</option>
               <option value="weekly">Еженедельно</option>
               <option value="yearly">Ежегодно</option>
@@ -263,7 +263,7 @@
           const d = this.effectiveNextDate(p).getTime();
           if (d < nextTs) nextTs = d;
         }
-        const nextDate = nextTs !== Infinity ? fmt.date(new Date(nextTs).toISOString()) : null;
+        const nextDate = nextTs !== Infinity ? fmt.date(fmtLocalDate(new Date(nextTs))) : null;
         return { monthly, nextDate };
       },
 
@@ -310,16 +310,22 @@
         }
       },
 
+      defaultDateForFreq(freq) {
+        const d = new Date();
+        if (freq === 'weekly')       d.setDate(d.getDate() + 7);
+        else if (freq === 'yearly')  d.setFullYear(d.getFullYear() + 1);
+        else                         d.setMonth(d.getMonth() + 1);
+        return fmtLocalDate(d);
+      },
+
       openCreate() {
         this.editId = null;
         this.formError = '';
-        const nextMonth = new Date();
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
         this.form = {
           name: '', amount: 0, frequency: 'monthly',
           account_id: this.accounts[0]?.id ?? '',
           category_id: '',
-          next_payment_date: fmtLocalDate(nextMonth),
+          next_payment_date: this.defaultDateForFreq('monthly'),
         };
         this.showModal = true;
       },

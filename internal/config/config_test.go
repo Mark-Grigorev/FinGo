@@ -42,5 +42,4 @@ func TestLoadConfigErr(t *testing.T) {
 	cfg, err := config.Load()
 	require.Nil(t, cfg)
 	assert.EqualError(t, err, "DB_CONN_STRING is required")
-
 }

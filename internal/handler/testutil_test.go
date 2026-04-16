@@ -263,7 +263,7 @@ func newTestEnv() *testEnv {
 	categorySvc := service.NewCategory(store, log)
 	budgetSvc := service.NewBudget(store, log)
 	recurringSvc := service.NewRecurring(store, log)
-	_ = service.NewCurrency(store, log)
+	currencySvc := service.NewCurrency(store, log)
 
 	r := gin.New()
 	authH := &authHandler{svc: authSvc, log: log}
@@ -273,19 +273,25 @@ func newTestEnv() *testEnv {
 	catH := &categoryHandler{svc: categorySvc, log: log}
 	budgetH := &budgetHandler{svc: budgetSvc, log: log}
 	recurringH := &recurringHandler{svc: recurringSvc, log: log}
+	currencyH := &currencyHandler{svc: currencySvc, log: log}
 
 	api := r.Group("/api")
 	api.POST("/auth/login", authH.login)
 	api.POST("/auth/register", authH.register)
 	api.POST("/auth/logout", authH.logout)
+	api.POST("/auth/forgot-password", authH.forgotPassword)
+	api.POST("/auth/reset-password", authH.resetPassword)
 
 	protected := api.Group("/")
 	protected.Use(authMiddleware(authSvc))
 	protected.GET("/auth/me", authH.me)
+	protected.PUT("/user/profile", authH.updateProfile)
+	protected.PUT("/user/password", authH.changePassword)
 	protected.GET("/accounts", accH.list)
 	protected.POST("/accounts", accH.create)
 	protected.PUT("/accounts/:id", accH.update)
 	protected.DELETE("/accounts/:id", accH.delete)
+	protected.GET("/transactions/export", txH.export)
 	protected.GET("/transactions", txH.list)
 	protected.POST("/transactions", txH.create)
 	protected.DELETE("/transactions/:id", txH.delete)
@@ -303,6 +309,11 @@ func newTestEnv() *testEnv {
 	protected.POST("/categories", catH.create)
 	protected.PUT("/categories/:id", catH.update)
 	protected.DELETE("/categories/:id", catH.delete)
+	protected.GET("/currencies/rates", currencyH.listRates)
+	protected.PUT("/currencies/rates/:currency", currencyH.upsertRate)
+	protected.DELETE("/currencies/rates/:currency", currencyH.deleteRate)
+	protected.GET("/currencies/base", currencyH.getBaseCurrency)
+	protected.PUT("/currencies/base", currencyH.setBaseCurrency)
 
 	return &testEnv{router: r, maker: maker, store: store}
 }
