@@ -25,6 +25,8 @@ jobs:
             image-name: ghcr.io/mark-grigorev/fingo
             dockerfile: Dockerfile.fingo
             build-args: VERSION=${{ github.ref_name }}
+        secrets:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     cd_nginx:
         needs: ci
@@ -36,3 +38,5 @@ jobs:
         with:
             image-name: ghcr.io/mark-grigorev/fingo-nginx
             dockerfile: Dockerfile.nginx
+        secrets:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
