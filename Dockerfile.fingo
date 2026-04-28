@@ -37,4 +37,4 @@ USER appuser
 
 EXPOSE ${PORT}
 
-CMD ["/app/app"]
+CMD ["/bin/sh","-c","[ -f /vault/secrets/config ] && . /vault/secrets/config; /app/app"]

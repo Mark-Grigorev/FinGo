@@ -17,16 +17,21 @@ import (
 	"github.com/Mark-Grigorev/FinGo/pkg/token"
 )
 
+type categorySeeder interface {
+	SeedDefaultCategories(ctx context.Context, userID int64) error
+}
+
 type AuthService struct {
 	store       repository.Storer
 	tokenMaker  *token.Maker
 	emailSender email.Sender
 	baseURL     string
 	log         *slog.Logger
+	categories  categorySeeder
 }
 
-func NewAuth(store repository.Storer, maker *token.Maker, emailSender email.Sender, baseURL string, log *slog.Logger) *AuthService {
-	return &AuthService{store: store, tokenMaker: maker, emailSender: emailSender, baseURL: baseURL, log: log}
+func NewAuth(store repository.Storer, maker *token.Maker, emailSender email.Sender, baseURL string, log *slog.Logger, categories categorySeeder) *AuthService {
+	return &AuthService{store: store, tokenMaker: maker, emailSender: emailSender, baseURL: baseURL, log: log, categories: categories}
 }
 
 func (s *AuthService) Login(ctx context.Context, email, password string) (*domain.User, string, *token.Payload, error) {
@@ -69,6 +74,12 @@ func (s *AuthService) Register(ctx context.Context, email, name, password string
 	user, err := s.store.CreateUser(ctx, email, name, string(hash))
 	if err != nil {
 		return nil, "", nil, domain.ErrAlreadyExists
+	}
+
+	if s.categories != nil {
+		if err := s.categories.SeedDefaultCategories(ctx, user.ID); err != nil {
+			s.log.Error("seed categories failed", "user_id", user.ID, "err", err)
+		}
 	}
 
 	tokenStr, payload, err := s.tokenMaker.CreateToken(user.ID, user.Email)

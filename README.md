@@ -52,9 +52,12 @@ FinGo — self-hosted веб-приложение для управления л
 ├── pkg/                  # переиспользуемые утилиты
 ├── migrations/           # миграции БД
 ├── docs/                 # Swagger / OpenAPI
-├── nginx/                # конфиг Nginx
+├── nginx/
+│   ├── nginx.conf        # конфиг Nginx для Kubernetes
+│   └── nginx-dev.conf    # конфиг Nginx для локального запуска
 ├── docker-compose.yml
-└── Dockerfile
+├── Dockerfile.fingo
+└── Dockerfile.nginx
 ```
 
 ### Быстрый старт
@@ -62,11 +65,11 @@ FinGo — self-hosted веб-приложение для управления л
 **Требования:** [Docker](https://www.docker.com/) и Docker Compose
 
 ```bash
-cp .env.example .env        # настроить окружение
-docker compose up --build
+cp .env.example .env              # настроить окружение
+docker compose up --build -d
 ```
 
-Приложение будет доступно по адресу `http://localhost`.
+Приложение будет доступно по адресу `http://localhost:8001`.
 
 **Локальная разработка** (требуется [Go 1.25+](https://go.dev/)):
 
@@ -158,9 +161,12 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 ├── pkg/                  # shared utilities
 ├── migrations/           # DB migrations
 ├── docs/                 # Swagger / OpenAPI
-├── nginx/                # Nginx config
+├── nginx/
+│   ├── nginx.conf        # Nginx config for Kubernetes
+│   └── nginx-dev.conf    # Nginx config for local Docker Compose
 ├── docker-compose.yml
-└── Dockerfile
+├── Dockerfile.fingo
+└── Dockerfile.nginx
 ```
 
 ### Getting Started
@@ -168,11 +174,11 @@ FinGo is a self-hosted web application for personal finance management. It lets 
 **Prerequisites:** [Docker](https://www.docker.com/) & Docker Compose
 
 ```bash
-cp .env.example .env        # configure environment
-docker compose up --build
+cp .env.example .env              # configure environment
+docker compose up --build -d
 ```
 
-App will be available at `http://localhost`.
+App will be available at `http://localhost:8001`.
 
 **Local development** (requires [Go 1.25+](https://go.dev/)):
 

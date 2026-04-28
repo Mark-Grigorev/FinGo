@@ -256,7 +256,7 @@ func newTestEnv() *testEnv {
 	maker, _ := token.New("", time.Hour)
 	log := slog.Default()
 
-	authSvc := service.NewAuth(store, maker, nil, "", log)
+	authSvc := service.NewAuth(store, maker, nil, "", log, nil)
 	accSvc := service.NewAccount(store, log)
 	txSvc := service.NewTransaction(store, log)
 	dashboardSvc := service.NewDashboard(store, log)
