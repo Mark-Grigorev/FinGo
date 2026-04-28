@@ -141,7 +141,7 @@
               <template x-if="p.category_name">
                 <span> · <span x-text="p.category_name"></span></span>
               </template>
-              · следующее <span x-text="fmt.date(fmtLocalDate(effectiveNextDate(p)))"></span>
+              · следующее <span x-text="fmt.date(p.next_payment_date.slice(0, 10))"></span>
             </div>
           </div>
           <div class="recurring-amount" x-text="'−' + fmt.money(p.amount)"></div>
@@ -358,11 +358,14 @@
         try {
           if (this.editId) {
             const updated = await api.put('/recurring/' + this.editId, body);
+            const cat = this.categories.find(c => c.id === updated.category_id);
+            const merged = { ...updated, category_name: cat?.name ?? '' };
             const idx = this.payments.findIndex(p => p.id === this.editId);
-            if (idx !== -1) this.payments.splice(idx, 1, updated);
+            if (idx !== -1) this.payments.splice(idx, 1, merged);
           } else {
             const created = await api.post('/recurring', body);
-            this.payments.push(created);
+            const cat = this.categories.find(c => c.id === created.category_id);
+            this.payments.push({ ...created, category_name: cat?.name ?? '' });
           }
           this.showModal = false;
         } catch(e) {
@@ -378,7 +381,7 @@
         try {
           await api.post('/transactions', {
             account_id:  p.account_id,
-            category_id: p.category_id ? String(p.category_id) : undefined,
+            category_id: p.category_id ?? null,
             type:        'expense',
             amount:      p.amount,
             name:        p.name,
@@ -400,7 +403,7 @@
             next_payment_date: fmtLocalDate(next),
           });
           const idx = this.payments.findIndex(x => x.id === p.id);
-          if (idx !== -1) this.payments.splice(idx, 1, updated);
+          if (idx !== -1) this.payments.splice(idx, 1, { ...updated, category_name: p.category_name });
         } catch(e) {
           alert(e.message || 'Ошибка при оплате');
         } finally {
