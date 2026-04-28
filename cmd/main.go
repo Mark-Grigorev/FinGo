@@ -87,11 +87,11 @@ func run() int {
 	emailSender := email.NewResend(cfg.Email.ResendAPIKey)
 
 	// Services & router
-	authSvc := service.NewAuth(store, maker, emailSender, cfg.Email.BaseURL, log)
+	categorySvc := service.NewCategory(store, log)
+	authSvc := service.NewAuth(store, maker, emailSender, cfg.Email.BaseURL, log, categorySvc)
 	accountSvc := service.NewAccount(store, log)
 	txSvc := service.NewTransaction(store, log)
 	dashboardSvc := service.NewDashboard(store, log)
-	categorySvc := service.NewCategory(store, log)
 	budgetSvc := service.NewBudget(store, log)
 	recurringSvc := service.NewRecurring(store, log)
 	currencySvc := service.NewCurrency(store, log)

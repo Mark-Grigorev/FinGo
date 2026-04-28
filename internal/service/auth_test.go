@@ -22,13 +22,13 @@ func newTestMaker(t *testing.T) *token.Maker {
 }
 
 func TestAuthLogin_EmptyEmail(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	_, _, _, err := svc.Login(context.Background(), "", "password")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
 
 func TestAuthLogin_EmptyPassword(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -39,7 +39,7 @@ func TestAuthLogin_UserNotFound(t *testing.T) {
 			return nil, domain.ErrNotFound
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	_, _, _, err := svc.Login(context.Background(), "notexist@example.com", "password")
 	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }
@@ -51,7 +51,7 @@ func TestAuthLogin_WrongPassword(t *testing.T) {
 			return &domain.User{ID: 1, Email: "user@example.com", PasswordHash: string(hash)}, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	_, _, _, err := svc.Login(context.Background(), "user@example.com", "wrong")
 	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }
@@ -64,7 +64,7 @@ func TestAuthLogin_Success(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	user, tok, payload, err := svc.Login(context.Background(), "USER@example.com", "password123")
 	require.NoError(t, err)
 	assert.Equal(t, int64(7), user.ID)
@@ -73,7 +73,7 @@ func TestAuthLogin_Success(t *testing.T) {
 }
 
 func TestAuthRegister_InvalidInput(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	cases := []struct {
 		email, name, password string
 	}{
@@ -94,7 +94,7 @@ func TestAuthRegister_AlreadyExists(t *testing.T) {
 			return nil, domain.ErrAlreadyExists
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	_, _, _, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
 	require.ErrorIs(t, err, domain.ErrAlreadyExists)
 }
@@ -106,7 +106,7 @@ func TestAuthRegister_Success(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	user, tok, payload, err := svc.Register(context.Background(), "alice@example.com", "Alice", "password123")
 	require.NoError(t, err)
 	assert.Equal(t, int64(5), user.ID)
@@ -124,7 +124,7 @@ func TestAuthGetUser(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	user, err := svc.GetUser(context.Background(), 3)
 	require.NoError(t, err)
 	assert.Equal(t, int64(3), user.ID)

@@ -825,10 +825,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* ─── MOBILE: sidebar → bottom tab bar ──────────── */
 @media (max-width: 768px) {
-  /* ── Bottom tab bar ── */
+  /* ── Bottom tab bar (горизонтальный скролл) ── */
   .sidebar {
     width: 100%;
-    height: 56px;
+    height: 62px;
     top: auto;
     bottom: 0;
     left: 0;
@@ -839,7 +839,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     gap: 0;
     border-right: none;
     border-top: 1px solid var(--sidebar-border);
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     z-index: 200;
     align-items: stretch;
     background: rgba(24, 24, 27, 0.95);
@@ -847,23 +850,20 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     -webkit-backdrop-filter: blur(16px);
   }
 
-  /* Скрываем logo и spacer */
+  .sidebar::-webkit-scrollbar { display: none; }
+
+  /* Скрываем logo, spacer и кнопку Выйти */
   .sidebar-logo,
   .sidebar-spacer { display: none !important; }
 
-
-  /* Скрываем: Категории (5-й), Регулярные (7-й), Выйти (11-й) */
-  .sidebar > *:nth-child(5),
-  .sidebar > *:nth-child(7),
   .sidebar > *:nth-child(11) { display: none !important; }
 
-  /* Каждый пункт — иконка по центру */
+  /* Каждый пункт — фиксированная ширина, иконка + подпись */
   .nav-item {
-    flex: 1;
-    min-width: 0;
+    flex: 0 0 64px;
     flex-direction: column;
-    padding: 8px 4px 6px;
-    gap: 0;
+    padding: 8px 4px 5px;
+    gap: 3px;
     justify-content: center;
     align-items: center;
     border-radius: 0;
@@ -889,16 +889,25 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     border-radius: 0 0 3px 3px;
   }
 
-  /* Иконки — чуть крупнее */
-  .nav-item svg { width: 22px; height: 22px; }
+  /* Иконки */
+  .nav-item svg { width: 20px; height: 20px; }
 
-  /* Подписи скрываем */
-  .nav-item span { display: none !important; }
+  /* Подписи — маленькие */
+  .nav-item span {
+    display: block !important;
+    font-size: 9px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+  }
 
   /* ── Контент ── */
   .main-content {
     margin-left: 0;
-    padding: 16px 16px calc(56px + env(safe-area-inset-bottom) + 20px);
+    padding: 16px 16px calc(62px + env(safe-area-inset-bottom) + 20px);
     max-width: 100vw;
   }
 
@@ -978,6 +987,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* ─── SMALL PHONES (≤ 375px) ─────────────────────── */
 @media (max-width: 375px) {
-  .main-content { padding: 12px 12px calc(56px + env(safe-area-inset-bottom) + 20px); }
+  .main-content { padding: 12px 12px calc(62px + env(safe-area-inset-bottom) + 20px); }
   .page-title h1 { font-size: 20px; }
 }

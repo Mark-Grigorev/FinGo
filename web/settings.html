@@ -125,6 +125,16 @@
       <div class="error-msg-inline" x-show="ratesError" x-text="ratesError"></div>
     </div>
 
+    <!-- Logout section (mobile) -->
+    <div class="settings-section" style="display:none" id="logout-section">
+      <h2>Аккаунт</h2>
+      <p style="font-size:13px;color:var(--muted-fg);margin-bottom:16px">Выйти из текущей сессии на этом устройстве</p>
+      <button class="btn btn-danger" onclick="logout()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти из аккаунта
+      </button>
+    </div>
+
     <!-- Password section -->
     <div class="settings-section">
       <h2>Смена пароля</h2>
@@ -152,6 +162,10 @@
 </div>
 
 <script>
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    document.getElementById('logout-section').style.display = '';
+  }
+
   function settingsPage() {
     return {
       profile: { name: '', email: '' },

@@ -14,7 +14,7 @@ import (
 )
 
 func TestAuthVerifyToken_Valid(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	tok, payload, err := svc.tokenMaker.CreateToken(42, "user@example.com")
 	require.NoError(t, err)
 
@@ -24,7 +24,7 @@ func TestAuthVerifyToken_Valid(t *testing.T) {
 }
 
 func TestAuthUpdateProfile_InvalidInput(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	cases := []struct{ name, email string }{
 		{"", "user@example.com"},
 		{"Alice", ""},
@@ -44,7 +44,7 @@ func TestAuthUpdateProfile_Success(t *testing.T) {
 			return want, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	got, err := svc.UpdateProfile(context.Background(), 1, "Bob", "bob@example.com")
 	require.NoError(t, err)
 	assert.Equal(t, "Bob", got.Name)
@@ -56,7 +56,7 @@ func TestAuthForgotPassword_EmailNotFound(t *testing.T) {
 			return nil, domain.ErrNotFound
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ForgotPassword(context.Background(), "nobody@example.com")
 	assert.Error(t, err)
 }
@@ -70,12 +70,12 @@ func TestAuthForgotPassword_Success(t *testing.T) {
 			return nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	require.NoError(t, svc.ForgotPassword(context.Background(), "user@example.com"))
 }
 
 func TestAuthResetPassword_ShortPassword(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ResetPassword(context.Background(), "token", "abc")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -86,7 +86,7 @@ func TestAuthResetPassword_TokenNotFound(t *testing.T) {
 			return nil, domain.ErrNotFound
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ResetPassword(context.Background(), "badtoken", "password123")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -101,7 +101,7 @@ func TestAuthResetPassword_Expired(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ResetPassword(context.Background(), "token", "password123")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -118,7 +118,7 @@ func TestAuthResetPassword_AlreadyUsed(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ResetPassword(context.Background(), "token", "password123")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -135,12 +135,12 @@ func TestAuthResetPassword_Success(t *testing.T) {
 		updatePasswordFn: func(_ context.Context, _ int64, _ string) error { return nil },
 		markPasswordResetUsedFn: func(_ context.Context, _ string) error { return nil },
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	require.NoError(t, svc.ResetPassword(context.Background(), "token", "newpassword"))
 }
 
 func TestAuthChangePassword_ShortNewPassword(t *testing.T) {
-	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(&mockStore{}, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ChangePassword(context.Background(), 1, "oldpassword", "abc")
 	require.ErrorIs(t, err, domain.ErrInvalidInput)
 }
@@ -152,7 +152,7 @@ func TestAuthChangePassword_WrongOldPassword(t *testing.T) {
 			return &domain.User{ID: 1, PasswordHash: string(hash)}, nil
 		},
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	err := svc.ChangePassword(context.Background(), 1, "wrong", "newpassword")
 	require.ErrorIs(t, err, domain.ErrUnauthorized)
 }
@@ -165,6 +165,6 @@ func TestAuthChangePassword_Success(t *testing.T) {
 		},
 		updatePasswordFn: func(_ context.Context, _ int64, _ string) error { return nil },
 	}
-	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default())
+	svc := NewAuth(store, newTestMaker(t), nil, "", slog.Default(), nil)
 	require.NoError(t, svc.ChangePassword(context.Background(), 1, "oldpassword", "newpassword"))
 }
