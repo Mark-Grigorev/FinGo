@@ -33,6 +33,10 @@ func (s *Store) Close() {
 	s.pool.Close()
 }
 
+func (s *Store) Ping(ctx context.Context) error {
+	return s.pool.Ping(ctx)
+}
+
 // Migrate применяет все pending миграции через golang-migrate.
 func (s *Store) Migrate() error {
 	db := stdlib.OpenDBFromPool(s.pool)

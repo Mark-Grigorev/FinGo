@@ -1,4 +1,4 @@
-ARG GO_VERSION=1.25.9
+ARG GO_VERSION=1.26.3
 ARG ALPINE_VERSION=3.22
 ARG VERSION=dev
 ARG PORT=8008
@@ -11,6 +11,8 @@ ARG PATH_TO_MAIN_FILE
 
 WORKDIR /app
 
+# В данном проекте нет необходимости фиксировать версии пакетов.
+# hadolint ignore=DL3018
 RUN apk add --no-cache gcc libc-dev
 
 COPY go.mod go.sum ./
@@ -25,6 +27,8 @@ ARG PORT
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
+# В данном проекте нет необходимости фиксировать версии пакетов.
+# hadolint ignore=DL3018
 RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
@@ -32,6 +36,9 @@ WORKDIR /app
 COPY --from=build --chown=appuser:appgroup /app/app /app/
 
 RUN mkdir -p /app/uploads/icons && chown -R appuser:appgroup /app/uploads
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \ 
+            CMD wget -qO- http://localhost:8080/health || exit 1
 
 USER appuser
 
