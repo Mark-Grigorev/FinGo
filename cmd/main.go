@@ -98,6 +98,7 @@ func run() int {
 
 	err = handler.NewRouter(
 		log,
+		store,
 		authSvc,
 		accountSvc,
 		txSvc,

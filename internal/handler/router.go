@@ -41,6 +41,7 @@ type RouterCfg struct {
 
 func NewRouter(
 	log *slog.Logger,
+	db Pinger,
 	auth *service.AuthService,
 	accounts *service.AccountService,
 	transactions *service.TransactionService,
@@ -69,9 +70,11 @@ func NewRouter(
 	budgetH := &budgetHandler{svc: budgets, log: log}
 	recurringH := &recurringHandler{svc: recurring, log: log}
 	currencyH := &currencyHandler{svc: currencies, log: log}
+	healthH := &healthHandler{db: db}
 
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/health", healthH.health)
 
 	// Serve uploaded files
 	r.Static("/api/uploads", routerCfg.UploadDir)
